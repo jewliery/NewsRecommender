@@ -3,26 +3,30 @@ import string
 from models.Rating import Rating
 
 
+def createHashtagString(hashtags):
+    string = ''
+    for tag in hashtags:
+        string += tag + ' '
+    return string
+
 class Tweet:
 
-    def __init__(self, id=0, text='', hashtags=(), user = None, popular=False, language='en', favorited=False, retweeted=False, klick=0, sensitive=False):
+    def __init__(self, id=0, text='', hashtags=[], user=None, popular=False, language='en', favorited=False,
+                 retweeted=False, klick=0, sensitive=False):
         self.id: int = id
         self.text: string = text
-        self.hashtags: list = hashtags
+        self.hashtags = createHashtagString(hashtags)
         self.user: User = user
         self.popular: bool = popular
         self.language: string = language
         self.rating: Rating = Rating(favorited, retweeted, klick)
         self.sensitive: bool = sensitive
-        self.vector: list = self.createVector()
+        self.keyValuePairs: list = self.createKeyValuePairs()
 
-    def createVector(self) -> list:
-        vector = ()
+    def createKeyValuePairs(self) -> list:
+        vector = {'popular': self.popular, 'language': self.language}
         return vector
 
-    def createWordVector(self) -> list:
-        vector = ()
-        return vector
 
     def favoriteTweet(self):
         self.rating = Rating(True, self.rating.retweeted, self.rating.klicks)
@@ -32,4 +36,29 @@ class Tweet:
 
     def klickTweet(self):
         self.rating = Rating(self.rating.favorited, self.rating.retweeted, self.rating.klicks + 1)
+
+    def print(self, showUser=True):
+        print('')
+        print('------TWEET INFO------')
+        print('Id: ' + str(self.id))
+        print('Text: ' + self.text)
+        print('Hashtags: ' + self.hashtags)
+        print('Popular: ' + str(self.popular))
+        print('Language: ' + self.language)
+        rating = 'Rating: '
+        if self.rating.favorited:
+            rating += 'favorited '
+        if self.rating.retweeted:
+            rating += 'retweeted '
+        print(rating)
+
+        if showUser:
+            print('')
+            print('------USER INFO------')
+            print('Username: ' + self.user.name)
+            print('Protected: ' + str(self.user.protected))
+            print('Followers: ' + str(self.user.followers))
+            print('Verified: ' + str(self.user.verified))
+            print('Language: ' + self.user.language)
+
 

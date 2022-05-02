@@ -4,11 +4,14 @@ import tweepy
 class TwitterManager:
 
     def __init__(self):
+        self.bearer_token = "AAAAAAAAAAAAAAAAAAAAAE4zaQEAAAAAUUzTh37lC5EwwcvO2euJ%2FbQnfqU%3D2FS6WOjomaTTGpwGbpi78ezhtEAZQ44wa8bi5I5OJn8fwj6xrB"
+        self.client2 = tweepy.Client(bearer_token=self.bearer_token)
         self.client = tweepy.Client(
-            consumer_key="YvEEBrW7pZiNTtUYn5XsSUYgg",
-            consumer_secret="qCuZtrN0rjWMMkR6IcjyoqG6CZYSCZXFthrQyRofAE8DAg5flM",
-            access_token="1504119098950705152-pxyiHB24q8gLZoGTFx7ParucCUy8mr",
-            access_token_secret="hpKRZ5hm1aiQOkcAKB6hcUnVPLHotQxu0kP9lhq5wwLGR"
+            bearer_token=self.bearer_token,
+            consumer_key="CuBKFmw0CivLjchfbHlYOUB2M",
+            consumer_secret="k3rqurXRGQqcv0WqB7Y1OicWdqoiIo9oKnqJ9DrpHiwuf3WG0m",
+            access_token="1504119098950705152-0yVcDDITfu7xwXwY1wiXaMCIRArbTw",
+            access_token_secret="4SHqywVzmJQCwxWRBlvNI0uOTYn2UqKos40RoQGVdYNHI"
         )
         self.api = self.createConnection()
 
@@ -29,7 +32,20 @@ class TwitterManager:
         favorite_tweets = self.api.get_favorites()
         return favorite_tweets
 
+    #Returns Retweets from Statuses from logged in person
     def getRetweets(self):
         retweets = self.api.get_retweets_of_me()
         return retweets
+
+    def getUserTimeline(self, userID):
+        tweets = self.api.user_timeline(userID)
+        return tweets
+
+    def getTweets(self, query):
+        tweets = self.api.search_tweets(q=query, lang="de", result_type="popular")
+        return tweets
+
+    # def getBookmarks(self):
+    #     tweets = self.client2.get_bookmarks()
+    #     return tweets
 
