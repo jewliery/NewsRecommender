@@ -56,15 +56,16 @@ def createVectors(tweets):
     for tweet in tweets:
         texts.append(tweet.text)
         hashtags.append(tweet.hashtags)
-        data.append(tweet.keyValuePairs)
-        user.append(tweet.user.keyValuePairs)
+        #data.append(tweet.keyValuePairs)
+        #user.append(tweet.user.keyValuePairs)
 
     vectorTexts = vectorizeTexts(texts)
     vectorHashtags = vectorizeTexts(hashtags)
-    vectorData = vectorizeData(data).astype(int)
-    vectorUser = vectorizeData(user).astype(int)
+    #vectorData = vectorizeData(data).astype(int)
+    #vectorUser = vectorizeData(user).astype(int)
 
-    vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
+    #vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
+    vector = np.concatenate([vectorTexts, vectorHashtags], axis=1).tolist()
     return vector
 
 
