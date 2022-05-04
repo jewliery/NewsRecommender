@@ -5,14 +5,9 @@ from helper.TwitterManager import TwitterManager
 from helper.FeatureSelection import *
 from sklearn import preprocessing
 import numpy as np
-from sklearn.naive_bayes import MultinomialNB
-
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn import metrics
 
 
-# Returns Vectorized Tweets data which was rated positiv by the user
+# Returns Vectorized Tweets data which was rated positive by the user
 def getTrainingsData():
     api = TwitterManager()
     tweets = api.getFavoriteTweets()
@@ -20,12 +15,24 @@ def getTrainingsData():
     vector = createVectors(tweetObjects)
     return vector
 
-
+# Returns Vectorized Tweets data which was not rated by the user
 def getTweetData():
+    api = TwitterManager()
     tweets = api.getTimeline()
     tweetObjects = convertTweetsToObjects(tweets)
     vector = createVectors(tweetObjects)
     return vector
+
+
+def getOverallData():
+    api = TwitterManager()
+    positive_tweets = api.getFavoriteTweets()
+    neutral_tweets = api.getTimeline()
+    y_train = combineData(positive_tweets, neutral_tweets)
+    tweets = positive_tweets + neutral_tweets
+    tweetObjects = convertTweetsToObjects(tweets)
+    x_train = createVectors(tweetObjects)
+    return x_train, y_train
 
 
 def scaleData(X_train):
@@ -33,13 +40,17 @@ def scaleData(X_train):
     X_scaled = scaler.transform(X_train)
     return X_scaled
 
-def trainData(X):
-    #y = np.ones(X.length)
-    y = np.array([1, 1, 0, 0, 1, 0, 1, 1, 0])
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
-    lr = LogisticRegression(C=100.0, random_state=1, solver='lbfgs', multi_class='ovr')
-    clf = MultinomialNB().fit(X_train, y_train)
-    #lr.fit(X_train, y_train)
-    #y_predict = lr.predict(X_test)
-    y_predict = clf.predict(X_test)
-    print("LogisticRegression Accuracy %.3f" % metrics.accuracy_score(y_test, y_predict))
+def combineData(positive,neutral):
+    pos = np.ones(len(positive),  dtype=int)
+    neu = np.zeros(len(neutral),  dtype=int)
+    y_train = np.concatenate([pos, neu], axis=0).tolist()
+    return y_train
+
+
+
+
+
+
+
+
+

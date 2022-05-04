@@ -4,6 +4,7 @@ from models.TweetObject import Tweet
 from helper.TwitterManager import TwitterManager
 from helper.FeatureSelection import *
 from helper.DataHelper import *
+from helper.Learner import *
 
 api = TwitterManager()
 
@@ -18,10 +19,14 @@ for tweet in tweetObjects:
     numberOfTweets += 1
 
 print("Number of Tweets: "+ str(numberOfTweets))
-vector = getTrainingsData()
-trainData(vector)
-for vec in vector:
-    print(vec)
+# for vec in vector:
+#     print(vec)
+
+x_train, y_train = getOverallData()
+train2DData(x_train, y_train)
+
+
+
 
 
 
