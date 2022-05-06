@@ -1,3 +1,5 @@
+import json
+
 from models.Rating import Rating
 from models.UserObject import User
 from models.TweetObject import Tweet
@@ -5,25 +7,37 @@ from helper.TwitterManager import TwitterManager
 from helper.FeatureSelection import *
 from helper.DataHelper import *
 from helper.Learner import *
+from helper.Visualizer import *
 
 api = TwitterManager()
 
-#tweets = api.getTweets("Ukraine")
-#tweets = api.getTimeline()
-tweets = api.getFavoriteTweets()
-tweetObjects = convertTweetsToObjects(tweets)
-numberOfTweets = 0
-for tweet in tweetObjects:
-    #user.addFavoriteTweet(tweet)
-    tweet.print(False)
-    numberOfTweets += 1
+#--------------------------Train Approaches----------------------------
+# x_train, y_train = getOverallData()
+# train2DData(x_train, y_train)
+# trainOCSVM(x_train)
 
-print("Number of Tweets: "+ str(numberOfTweets))
-# for vec in vector:
-#     print(vec)
+#----------------------------Visualization------------------------------
+tweetVectors, features = getAllTrainingsData()
+# tweetVectorsTfIdf = getTfIdfAllTrainingsData()
+showBarGraph(tweetVectors, features)
+# show2DVisualization(tweetVectors)
 
-x_train, y_train = getOverallData()
-train2DData(x_train, y_train)
+tweets = api.getAllMyLikedTweets()
+tweetObjects = convertDictTweetsToObjects(tweets)
+showAnother2DVisualization(tweetObjects)
+
+#--------------------------------Testing--------------------------------
+# tweets = api.getAllMyLikedTweets()
+# tweet_obj = convertDictTweetsToObjects(tweets)
+# for t in tweet_obj:
+#     t.print()
+
+
+
+
+
+
+
 
 
 

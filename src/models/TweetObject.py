@@ -52,9 +52,10 @@ class Tweet:
             rating += 'retweeted '
         print(rating)
 
-        if showUser:
+        if showUser & (self.user is not None):
             print('')
             print('------USER INFO------')
+            print('Id: ' + str(self.user.id))
             print('Username: ' + self.user.name)
             print('Protected: ' + str(self.user.protected))
             print('Followers: ' + str(self.user.followers))

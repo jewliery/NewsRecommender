@@ -5,7 +5,7 @@ class TwitterManager:
 
     def __init__(self):
         self.bearer_token = "AAAAAAAAAAAAAAAAAAAAAE4zaQEAAAAAUUzTh37lC5EwwcvO2euJ%2FbQnfqU%3D2FS6WOjomaTTGpwGbpi78ezhtEAZQ44wa8bi5I5OJn8fwj6xrB"
-        self.client2 = tweepy.Client(bearer_token=self.bearer_token)
+        self.client2 = tweepy.Client(bearer_token=self.bearer_token, return_type=dict)
         self.client = tweepy.Client(
             bearer_token=self.bearer_token,
             consumer_key="CuBKFmw0CivLjchfbHlYOUB2M",
@@ -45,7 +45,19 @@ class TwitterManager:
         tweets = self.api.search_tweets(q=query, lang="de", result_type="popular")
         return tweets
 
-    # def getBookmarks(self):
-    #     tweets = self.client2.get_bookmarks()
-    #     return tweets
+    def getBookmarks(self):
+        tweets = self.client2.get_bookmarks()
+        return tweets
+
+    def getLikedTweets(self, id):
+        tweets = self.client2.get_liked_tweets(id=id)
+        return tweets
+
+    def getUser(self, name):
+        user = self.client2.get_user(username=name)
+        return user
+
+    def getAllMyLikedTweets(self):
+        tweets = self.client2.get_liked_tweets(id=1504119098950705152, tweet_fields=['entities','possibly_sensitive','author_id','lang'])
+        return tweets
 

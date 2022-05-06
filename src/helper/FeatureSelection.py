@@ -21,6 +21,20 @@ def convertTweetsToObjects(tweets):
         tweetObjects.append(tweetObject)
     return tweetObjects
 
+def convertDictTweetsToObjects(tweets):
+    tweetObjects = []
+    for tweet in tweets['data']:
+        hashtags = []
+        try:
+            for tag in tweet['entities']['hashtags']:
+                hashtags.append(tag['tag'])
+        except:
+            hashtags.append("")
+        tweetObject = Tweet(id=tweet['id'], text=tweet['text'], hashtags=hashtags)
+        tweetObjects.append(tweetObject)
+    return tweetObjects
+
+
 
 def convertUserToObject(user):
     userObject = User(user.id, user.screen_name, user.protected, user.followers_count,
@@ -29,11 +43,11 @@ def convertUserToObject(user):
 
 # Vectorize Text Data with Count Vectorizer
 def vectorizeTexts(texts):
-    vectorizer = CountVectorizer()
+    vectorizer = CountVectorizer(stop_words=["https"])
     X = vectorizer.fit_transform(texts)
-    vectorizer.get_feature_names_out()
+    features = vectorizer.get_feature_names_out()
     vector = X.toarray()
-    return vector
+    return vector, features
 
 # Vectorize Text Data with TfIdf
 def tfIdfVectorizeTexts(texts):
@@ -48,7 +62,40 @@ def vectorizeData(data):
     vector = vectorizer.fit_transform(data).toarray()
     return vector
 
+# Creates Vector consisting of Text and Hashtags from Tweet
 def createVectors(tweets):
+    texts = []
+    hashtags = []
+    for tweet in tweets:
+        texts.append(tweet.text)
+        hashtags.append(tweet.hashtags)
+
+    vectorTexts, featuresText = vectorizeTexts(texts)
+    vectorHashtags, featuresHashtags = vectorizeTexts(hashtags)
+    vectorHashtags = vectorHashtags * 4
+
+    features = np.concatenate([featuresText, featuresHashtags], axis=0).tolist()
+    vector = np.concatenate([vectorTexts, vectorHashtags], axis=1).tolist()
+    return vector, features
+
+def createVectorsTfIdf(tweets):
+    texts = []
+    hashtags = []
+    for tweet in tweets:
+        texts.append(tweet.text)
+        hashtags.append(tweet.hashtags)
+
+    vectorTexts = tfIdfVectorizeTexts(texts)
+    vectorHashtags = tfIdfVectorizeTexts(hashtags)
+    vectorHashtags = vectorHashtags * 4
+
+    vector = np.concatenate([vectorTexts, vectorHashtags], axis=1).tolist()
+    return vector
+
+
+# Creates Vector consisting of Text, Hashtags and Meta Information from Tweet
+# Careful: Tweet Object must contain a User!
+def createFullVectors(tweets):
     texts = []
     hashtags = []
     data = []
@@ -56,17 +103,18 @@ def createVectors(tweets):
     for tweet in tweets:
         texts.append(tweet.text)
         hashtags.append(tweet.hashtags)
-        #data.append(tweet.keyValuePairs)
-        #user.append(tweet.user.keyValuePairs)
+        data.append(tweet.keyValuePairs)
+        user.append(tweet.user.keyValuePairs)
 
-    vectorTexts = vectorizeTexts(texts)
-    vectorHashtags = vectorizeTexts(hashtags)
-    #vectorData = vectorizeData(data).astype(int)
-    #vectorUser = vectorizeData(user).astype(int)
+    vectorTexts, featuresText = vectorizeTexts(texts)
+    vectorHashtags, featuresHashtags = vectorizeTexts(hashtags)
+    vectorHashtags = vectorHashtags * 4
+    vectorData = vectorizeData(data).astype(int)
+    vectorUser = vectorizeData(user).astype(int)
 
-    #vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
-    vector = np.concatenate([vectorTexts, vectorHashtags], axis=1).tolist()
-    return vector
+    features = np.concatenate([featuresText, featuresHashtags], axis=0).tolist()
+    vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
+    return vector, features
 
 
 

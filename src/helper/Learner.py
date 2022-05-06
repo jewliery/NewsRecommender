@@ -29,6 +29,7 @@ def trainOCSVM(x):
     print(pred)
     scores = svm.score_samples(x)
     print(scores)
+    print("One Class SVM Accuracy" % metrics.accuracy_score(x))
     #thresh = np.quantile(scores, 0.03)
     #index = np.where(scores <= thresh)
 

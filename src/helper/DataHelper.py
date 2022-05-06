@@ -6,18 +6,24 @@ from helper.FeatureSelection import *
 from sklearn import preprocessing
 import numpy as np
 
+api = TwitterManager()
 
-# Returns Vectorized Tweets data which was rated positive by the user
+# Returns 20 Vectorized Tweets data which was rated positive by the user
 def getTrainingsData():
-    api = TwitterManager()
     tweets = api.getFavoriteTweets()
     tweetObjects = convertTweetsToObjects(tweets)
     vector = createVectors(tweetObjects)
     return vector
 
+# Returns every Tweet I have liked
+def getAllTrainingsData():
+    tweets = api.getAllMyLikedTweets()
+    tweetObjects = convertDictTweetsToObjects(tweets)
+    vector = createVectors(tweetObjects)
+    return vector
+
 # Returns Vectorized Tweets data which was not rated by the user
 def getTweetData():
-    api = TwitterManager()
     tweets = api.getTimeline()
     tweetObjects = convertTweetsToObjects(tweets)
     vector = createVectors(tweetObjects)
@@ -25,7 +31,6 @@ def getTweetData():
 
 
 def getOverallData():
-    api = TwitterManager()
     positive_tweets = api.getFavoriteTweets()
     neutral_tweets = api.getTimeline()
     y_train = combineData(positive_tweets, neutral_tweets)
@@ -46,6 +51,19 @@ def combineData(positive,neutral):
     y_train = np.concatenate([pos, neu], axis=0).tolist()
     return y_train
 
+# Returns Vectorized Tweets data which was rated positive by the user
+def getTfIdfTrainingsData():
+    tweets = api.getFavoriteTweets()
+    tweetObjects = convertTweetsToObjects(tweets)
+    vector = createVectorsTfIdf(tweetObjects)
+    return vector
+
+# Returns Vectorized Tweets data which was rated positive by the user
+def getTfIdfAllTrainingsData():
+    tweets = api.getAllMyLikedTweets()
+    tweetObjects = convertDictTweetsToObjects(tweets)
+    vector = createVectorsTfIdf(tweetObjects)
+    return vector
 
 
 
