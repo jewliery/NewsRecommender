@@ -17,20 +17,25 @@ api = TwitterManager()
 # trainOCSVM(x_train)
 
 #----------------------------Visualization------------------------------
-tweetVectors, features = getAllTrainingsData()
+# tweetVectors, features = getAllTrainingsData()
 # tweetVectorsTfIdf = getTfIdfAllTrainingsData()
-showBarGraph(tweetVectors, features)
+# showBarGraph(tweetVectors, features)
 # show2DVisualization(tweetVectors)
 
-tweets = api.getAllMyLikedTweets()
-tweetObjects = convertDictTweetsToObjects(tweets)
-showAnother2DVisualization(tweetObjects)
+# tweets = api.getAllMyLikedTweets()
+# tweetObjects = convertDictTweetsToObjects(tweets)
+# showAnother2DVisualization(tweetObjects)
 
 #--------------------------------Testing--------------------------------
 # tweets = api.getAllMyLikedTweets()
 # tweet_obj = convertDictTweetsToObjects(tweets)
 # for t in tweet_obj:
 #     t.print()
+
+#-------------------------Stemming, Lemmatisierung----------------------
+tweets = getRawTrainingsData()
+testNormalization(tweets)
+
 
 
 

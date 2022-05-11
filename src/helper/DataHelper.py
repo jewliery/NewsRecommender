@@ -15,12 +15,18 @@ def getTrainingsData():
     vector = createVectors(tweetObjects)
     return vector
 
-# Returns every Tweet I have liked
+# Returns every Tweet I have liked as vector
 def getAllTrainingsData():
     tweets = api.getAllMyLikedTweets()
     tweetObjects = convertDictTweetsToObjects(tweets)
     vector = createVectors(tweetObjects)
     return vector
+
+# Returns every Tweet I have liked as TweetObject
+def getRawTrainingsData():
+    tweets = api.getAllMyLikedTweets()
+    tweetObjects = convertDictTweetsToObjects(tweets)
+    return tweetObjects
 
 # Returns Vectorized Tweets data which was not rated by the user
 def getTweetData():
