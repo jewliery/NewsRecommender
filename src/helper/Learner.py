@@ -14,7 +14,7 @@ from sklearn.naive_bayes import MultinomialNB
 def train2DData(X, y):
     #y = np.array([1, 1, 0, 0, 1, 0, 1, 1, 0])
     X_train, X_test, y_train, y_test = train_test_split(X, y)
-    lr = LogisticRegression(C=100.0, random_state=1, solver='lbfgs', multi_class='ovr')
+    #lr = LogisticRegression(C=100.0, random_state=1, solver='lbfgs', multi_class='ovr')
     clf = MultinomialNB().fit(X_train, y_train)
     #lr.fit(X_train, y_train)
     #y_predict = lr.predict(X_test)
@@ -34,5 +34,3 @@ def trainOCSVM(x):
     #index = np.where(scores <= thresh)
 
 
-def trainIsolationForest(x):
-    return

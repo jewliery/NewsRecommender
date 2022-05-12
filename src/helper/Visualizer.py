@@ -13,6 +13,12 @@ def showBarGraph(tweets, features):
     visualizer.fit(tweets)
     visualizer.poof()
 
+def showBar(tweets, features):
+    tweets = np.array(tweets)
+    visualizer = FreqDistVisualizer(features=features)
+    visualizer.fit(tweets)
+    visualizer.show()
+
 
 def show2DVisualization(tweets):
     tweets = np.array(tweets)

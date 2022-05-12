@@ -2,6 +2,7 @@ from models.Rating import Rating
 from models.UserObject import User
 from models.TweetObject import Tweet
 from helper.TwitterManager import TwitterManager
+from helper.DataProcessor import *
 from helper.FeatureSelection import *
 from sklearn import preprocessing
 import numpy as np
@@ -12,14 +13,14 @@ api = TwitterManager()
 def getTrainingsData():
     tweets = api.getFavoriteTweets()
     tweetObjects = convertTweetsToObjects(tweets)
-    vector = createVectors(tweetObjects)
+    vector, features = createVectors(tweetObjects)
     return vector
 
 # Returns every Tweet I have liked as vector
 def getAllTrainingsData():
     tweets = api.getAllMyLikedTweets()
     tweetObjects = convertDictTweetsToObjects(tweets)
-    vector = createVectors(tweetObjects)
+    vector, features = createVectors(tweetObjects)
     return vector
 
 # Returns every Tweet I have liked as TweetObject
@@ -32,17 +33,17 @@ def getRawTrainingsData():
 def getTweetData():
     tweets = api.getTimeline()
     tweetObjects = convertTweetsToObjects(tweets)
-    vector = createVectors(tweetObjects)
+    vector, features = createVectors(tweetObjects)
     return vector
 
 
 def getOverallData():
     positive_tweets = api.getFavoriteTweets()
     neutral_tweets = api.getTimeline()
-    y_train = combineData(positive_tweets, neutral_tweets)
+    y_train = createYdata(positive_tweets, neutral_tweets)
     tweets = positive_tweets + neutral_tweets
     tweetObjects = convertTweetsToObjects(tweets)
-    x_train = createVectors(tweetObjects)
+    x_train, features = createVectors(tweetObjects)
     return x_train, y_train
 
 
@@ -51,7 +52,7 @@ def scaleData(X_train):
     X_scaled = scaler.transform(X_train)
     return X_scaled
 
-def combineData(positive,neutral):
+def createYdata(positive,neutral):
     pos = np.ones(len(positive),  dtype=int)
     neu = np.zeros(len(neutral),  dtype=int)
     y_train = np.concatenate([pos, neu], axis=0).tolist()
