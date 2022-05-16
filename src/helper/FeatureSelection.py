@@ -5,6 +5,7 @@ from helper.TwitterManager import TwitterManager
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction import DictVectorizer
+from sklearn import preprocessing
 import numpy as np
 import spacy
 import nltk
@@ -46,14 +47,20 @@ def vectorizeTexts(texts):
 def tfIdfVectorizeTexts(texts):
     tfIdfVectorizer = TfidfVectorizer(use_idf=True)
     tfIdf = tfIdfVectorizer.fit_transform(texts)
+    features = tfIdfVectorizer.get_feature_names_out()
     vector = tfIdf.toarray()
-    return vector
+    return vector, features
 
 # Vectorize Data with key value pairs
-def vectorizeData(data):
+def vectorizeData(data, scale=True):
     vectorizer = DictVectorizer()
     vector = vectorizer.fit_transform(data).toarray()
-    return vector
+    if scale:
+        min_max_scaler = preprocessing.MinMaxScaler()
+        vector = min_max_scaler.fit_transform(vector)
+    print(vector)
+    features = vectorizer.get_feature_names_out()
+    return vector, features
 
 # Creates Vector consisting of Text and Hashtags from Tweet
 def createVectors(tweets):
@@ -77,11 +84,12 @@ def createVectorsTfIdf(tweets):
         texts.append(tweet.text)
         hashtags.append(tweet.hashtags)
 
-    vectorTexts = tfIdfVectorizeTexts(texts)
-    vectorHashtags = tfIdfVectorizeTexts(hashtags)
+    vectorTexts, featuresText = tfIdfVectorizeTexts(texts)
+    vectorHashtags, featuresHashtags = tfIdfVectorizeTexts(hashtags)
 
+    features = np.concatenate([featuresText, featuresHashtags], axis=0).tolist()
     vector = np.concatenate([vectorTexts, vectorHashtags], axis=1).tolist()
-    return vector
+    return vector, features
 
 
 # Creates Vector consisting of Text, Hashtags and Meta Information from Tweet
@@ -99,12 +107,39 @@ def createFullVectors(tweets):
 
     vectorTexts, featuresText = vectorizeTexts(texts)
     vectorHashtags, featuresHashtags = vectorizeTexts(hashtags)
-    vectorHashtags = vectorHashtags * 4
-    vectorData = vectorizeData(data).astype(int)
-    vectorUser = vectorizeData(user).astype(int)
+    vectorData, featuresData = vectorizeData(data).astype(int)
+    vectorUser, featuresUser = vectorizeData(user).astype(int)
 
-    features = np.concatenate([featuresText, featuresHashtags], axis=0).tolist()
+    features = np.concatenate([featuresText, featuresHashtags, featuresData, featuresUser], axis=0).tolist()
     vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
+    return vector, features
+
+def createFullVectorsTfIdf(tweets):
+    texts = []
+    hashtags = []
+    data = []
+    user = []
+    no_hashtags = True
+    for tweet in tweets:
+        texts.append(tweet.text)
+        if tweet.hashtags != " ":
+            no_hashtags = False
+        hashtags.append(tweet.hashtags)
+        data.append(tweet.keyValuePairs)
+        user.append(tweet.user.keyValuePairs)
+
+    vectorTexts, featuresText = tfIdfVectorizeTexts(texts)
+    if not no_hashtags:
+        vectorHashtags, featuresHashtags = tfIdfVectorizeTexts(hashtags)
+    vectorData, featuresData = vectorizeData(data)
+    vectorUser, featuresUser = vectorizeData(user)
+
+    if not no_hashtags:
+        features = np.concatenate([featuresText, featuresHashtags, featuresData, featuresUser], axis=0).tolist()
+        vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
+    else:
+        features = np.concatenate([featuresText, featuresData, featuresUser], axis=0).tolist()
+        vector = np.concatenate([vectorTexts, vectorData, vectorUser], axis=1).tolist()
     return vector, features
 
 

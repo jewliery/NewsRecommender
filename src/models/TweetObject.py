@@ -60,6 +60,5 @@ class Tweet:
             print('Protected: ' + str(self.user.protected))
             print('Followers: ' + str(self.user.followers))
             print('Verified: ' + str(self.user.verified))
-            print('Language: ' + self.user.language)
 
 

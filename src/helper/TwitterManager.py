@@ -66,17 +66,31 @@ class TwitterManager:
         tweets = self.api.user_timeline(userID)
         return tweets
 
-    # Returns Liked Tweets of User with specified ID
-    def getLikedTweets(self, id):
-        tweets = self.client2.get_liked_tweets(id=id)
-        return tweets
 
     #------------------------API V2----------------------------
-    def getUser(self, name):
-        user = self.client2.get_user(username=name)
+    # Returns Liked Tweets of User with specified ID
+    def getLikedTweets(self, id):
+        tweets = self.client2.get_liked_tweets(id=id, tweet_fields=['author_id','public_metrics'])
+        return tweets
+
+    def getUser(self, name='', user_id=0):
+        if name == '':
+            user = self.client2.get_user(id=user_id, user_fields=['entities','protected','verified','public_metrics'])
+        elif user_id == 0:
+            user = self.client2.get_user(username=name,user_fields=['entities', 'protected', 'verified', 'public_metrics'])
         return user
 
     def getAllMyLikedTweets(self):
         tweets = self.client2.get_liked_tweets(id=1504119098950705152, tweet_fields=['entities','possibly_sensitive','author_id','lang'])
         return tweets
+
+    def getAllFollowing(self, user_id):
+        user = self.client2.get_users_following(id=user_id)
+        return user
+
+    def getAllUsersTweets(self, user_id):
+        tweets = self.client2.get_users_tweets(id=user_id, max_results=5)
+        return tweets
+
+
 

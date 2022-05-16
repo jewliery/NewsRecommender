@@ -9,17 +9,18 @@ from helper.FeatureSelection import *
 from helper.DataHelper import *
 from helper.Learner import *
 from helper.Visualizer import *
+from helper.DataPreprocessor import *
 
 api = TwitterManager()
 
 #--------------------------Train Approaches----------------------------
-x_train, y_train = getOverallData()
-train2DData(x_train, y_train)
+# x_train, y_train = getOverallData()
+# train2DData(x_train, y_train)
 # trainOCSVM(x_train)
 
 #----------------------------Visualization------------------------------
-# tweetVectors, features = getAllTrainingsData()
-# tweetVectorsTfIdf = getTfIdfAllTrainingsData()
+# tweetVectors, features = getAllMyLikedVectorData()
+# tweetVectorsTfIdf = getAllLikedVectorDataTfIdf()
 # showBarGraph(tweetVectors, features)
 # showBar(tweetVectors, features)
 # show2DVisualization(tweetVectors)
@@ -29,13 +30,22 @@ train2DData(x_train, y_train)
 # showAnother2DVisualization(tweetObjects)
 
 #--------------------------------Testing--------------------------------
-# tweets = api.getAllMyLikedTweets()
-# tweet_obj = convertDictTweetsToObjects(tweets)
+# tweet_obj = getAllMyLikedRawData()
 # for t in tweet_obj:
 #     t.print()
 
-
 #-----------------------------------Test----------------------------------
+# tweets = getNegativeDataFromUser("elhotzo")
+# for tweet in tweets:
+#     tweet.print(False)
+
+u = api.getUser(name="caro_bue")
+user = convertDictUserToObject(u)
+t = api.getLikedTweets(user.id)
+tweets = convertDictTweetsToObjects(t)
+# for tweet in tweets:
+#     tweet.print(showUser=True)
+vectors = createFullVectorsTfIdf(tweets)
 
 
 
