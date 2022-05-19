@@ -1,17 +1,16 @@
 import json
-
+#from helper.MyStreamListener import MyStreamListener
 from models.Rating import Rating
 from models.UserObject import User
 from models.TweetObject import Tweet
 from helper.TwitterManager import TwitterManager
-from helper.MyStreamListener import MyStreamListener
 from helper.FeatureSelection import *
 from helper.DataHelper import *
 from helper.Learner import *
 from helper.Visualizer import *
 from helper.DataPreprocessor import *
 
-api = TwitterManager()
+#api = TwitterManager()
 
 #--------------------------Train Approaches----------------------------
 # x_train, y_train = getOverallData()
@@ -35,17 +34,21 @@ api = TwitterManager()
 #     t.print()
 
 #-----------------------------------Test----------------------------------
-# tweets = getNegativeDataFromUser("elhotzo")
+
+positive, negative = getDataFromUser("jules3x")
+print("----------------------------Positive Tweets-------------------------------")
+for p_t in positive:
+    p_t.print(False)
+print("----------------------------Negative Tweets-------------------------------")
+for n_t in negative:
+    n_t.print(True)
+
+#tweets = getMyLikedRawData()
+
 # for tweet in tweets:
 #     tweet.print(False)
 
-u = api.getUser(name="caro_bue")
-user = convertDictUserToObject(u)
-t = api.getLikedTweets(user.id)
-tweets = convertDictTweetsToObjects(t)
-# for tweet in tweets:
-#     tweet.print(showUser=True)
-vectors = createFullVectorsTfIdf(tweets)
+# tweets = getDataFromUser("caro_bue")
 
 
 

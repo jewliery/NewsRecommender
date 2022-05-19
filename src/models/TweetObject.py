@@ -11,7 +11,7 @@ def createHashtagString(hashtags):
 
 class Tweet:
 
-    def __init__(self, id=0, text='', hashtags=[], user=None, popular=False, language='en', favorited=False,
+    def __init__(self, id=0, text='', hashtags=[], user=None, popular=False, language='de', favorited=False,
                  retweeted=False, klick=0, sensitive=False):
         self.id: int = id
         self.text: string = text
@@ -22,6 +22,18 @@ class Tweet:
         self.rating: Rating = Rating(favorited, retweeted, klick)
         self.sensitive: bool = sensitive
         self.keyValuePairs: list = self.createKeyValuePairs()
+
+    def __hash__(self):
+        return hash(self.text)
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __cmp__(self, other):
+        return self.id == other.id
+
+    def  __gt__(self, other):
+        return self.id > other.id
 
     def createKeyValuePairs(self) -> list:
         vector = {'popular': self.popular, 'language': self.language}

@@ -1,3 +1,5 @@
+from helper.TwitterManager import TwitterManager
+
 class User:
 
     def __init__(self, id=0, name='', protected=False, followers=0, verified=False):
@@ -7,8 +9,12 @@ class User:
         self.followers = followers
         self.verified = verified
 
+        self.following = []
+        self.followersTweets = []
+
         self.keyValuePairs = self.createKeyValuePairs()
         self.favorite_tweets = []
+        self.api = TwitterManager()
 
     def createKeyValuePairs(self) -> list:
         vector = {'protected': self.protected, 'followers': self.followers,
@@ -18,7 +24,25 @@ class User:
     def addFavoriteTweet(self, tweet):
         self.favorite_tweets.append(tweet)
 
+    def updateFollowingList(self):
+        self.following = api.getAllFollowing(self.id)['data']
+
+    def updateFollowersTweets(self):
+        all_tweets = {}
+        for u in self.following:
+            tweets = api.getAllUsersTweets(int(u['id']))
+            print(u['id'])
+            all_tweets.update(tweets)
+        self.followersTweets = convertDictTweetsToObjects(all_tweets)
 
 
+    def __hash__(self):
+        return hash(str(self.name))
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __cmp__(self, other):
+        return self.id == other.id
 
 

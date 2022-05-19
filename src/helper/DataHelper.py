@@ -9,6 +9,20 @@ import numpy as np
 
 api = TwitterManager()
 
+#--------------------------Preprocessing-------------------------------
+def scaleData(X_train):
+    scaler = preprocessing.StandardScaler().fit(X_train)
+    X_scaled = scaler.transform(X_train)
+    return X_scaled
+
+# Vorrübergehende Lösung
+def createYdata(positive,neutral):
+    pos = np.ones(len(positive),  dtype=int)
+    neu = np.zeros(len(neutral),  dtype=int)
+    y_train = np.concatenate([pos, neu], axis=0).tolist()
+    return y_train
+
+#----------------TESTS LATER PROBABLY IRRELEVANT--------------------------
 #-------------------------API v1.1----------------------------------------
 # Returns 20 Vectorized Tweets data which was rated positive by the user
 def getMyLikedVectorData():
@@ -16,6 +30,11 @@ def getMyLikedVectorData():
     tweetObjects = convertTweetsToObjects(tweets)
     vector, features = createVectors(tweetObjects)
     return vector
+
+def getMyLikedRawData():
+    tweets = api.getFavoriteTweets()
+    tweetObjects = convertTweetsToObjects(tweets)
+    return tweetObjects
 
 # Returns Vectorized Tweets data which was not rated by the user
 def getMyVectorTimeline():
@@ -61,19 +80,6 @@ def getAllLikedVectorDataTfIdf():
     tweetObjects = convertDictTweetsToObjects(tweets)
     vector = createVectorsTfIdf(tweetObjects)
     return vector
-
-#--------------------------Preprocessing-------------------------------
-def scaleData(X_train):
-    scaler = preprocessing.StandardScaler().fit(X_train)
-    X_scaled = scaler.transform(X_train)
-    return X_scaled
-
-# Vorrübergehende Lösung
-def createYdata(positive,neutral):
-    pos = np.ones(len(positive),  dtype=int)
-    neu = np.zeros(len(neutral),  dtype=int)
-    y_train = np.concatenate([pos, neu], axis=0).tolist()
-    return y_train
 
 
 
