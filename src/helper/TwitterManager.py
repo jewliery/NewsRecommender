@@ -44,7 +44,7 @@ class TwitterManager:
         retweets = self.api.get_retweets_of_me()
         return retweets
 
-    #-------------------------------Unabhängiges---------------------------------
+    #-------------------------------API V1.1---------------------------------
     # def getRandomTweets(self):
     #     ml = MyStreamListener(self.consumer_key,
     #                             self.consumer_secret,
@@ -66,6 +66,12 @@ class TwitterManager:
         tweets = self.api.user_timeline(user_id=userID)
         return tweets
 
+    def getTrends(self):
+        #locations = self.api.closest_trends(lat=52.373920, long=9.735603)
+        woeid_berlin = 638242
+        woeid_hamburg = 656958
+        trends = self.api.get_place_trends(id=woeid_berlin)
+        return trends
 
     #------------------------API V2----------------------------
     # Returns Liked Tweets of User with specified ID
@@ -75,7 +81,7 @@ class TwitterManager:
 
     def getUser(self, name='', user_id=0, more_info=False):
         if more_info:
-            user_fields = ['entities','protected','verified','public_metrics']
+            user_fields = ['entities','protected','verified','public_metrics','location']
         elif not more_info:
             user_fields = []
         if name == '':
@@ -92,8 +98,8 @@ class TwitterManager:
         user = self.client2.get_users_following(id=user_id, max_results=5)
         return user
 
-    def getAllUsersTweets(self, user_id):
-        tweets = self.client2.get_users_tweets(id=user_id, max_results=5, tweet_fields=['entities','author_id','lang'])
+    def getAllUsersTweets(self, user_id, max_results=5):
+        tweets = self.client2.get_users_tweets(id=user_id, max_results=max_results, tweet_fields=['entities','author_id','lang'])
         return tweets
 
 

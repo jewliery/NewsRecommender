@@ -9,6 +9,8 @@ from helper.DataHelper import *
 from helper.Learner import *
 from helper.Visualizer import *
 from helper.DataPreprocessor import *
+from helper.Modeling import *
+from helper.Recommender import *
 
 #api = TwitterManager()
 
@@ -35,20 +37,9 @@ from helper.DataPreprocessor import *
 
 #-----------------------------------Test----------------------------------
 
-positive, negative = getDataFromUser("jules3x")
-print("----------------------------Positive Tweets-------------------------------")
-for p_t in positive:
-    p_t.print(False)
-print("----------------------------Negative Tweets-------------------------------")
-for n_t in negative:
-    n_t.print(True)
+#testModels("jules3x")
+clf = createUserModel("jules3x", "random-forest")
 
-#tweets = getMyLikedRawData()
-
-# for tweet in tweets:
-#     tweet.print(False)
-
-# tweets = getDataFromUser("caro_bue")
 
 
 
