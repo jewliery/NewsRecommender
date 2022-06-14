@@ -15,57 +15,104 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from sklearn.cluster import KMeans
 from time import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-def createUserModel(user_name, algorithm):
-    positive, negative, user = getDataFromUser(user_name)
+def getTrainingData(userData):
+    positive, negative = userData.getDataFromUser()
     tweets = positive + negative
     y_train = createYdata(positive, negative)
     #x_train, features = createFullVectorsTfIdf(tweets)
     x_train, features = createVectorsTfIdf(tweets)
+    userData.setTrainData(train=tweets, x_train=x_train, y_train=y_train)
+    return x_train, y_train
+
+def createUserModel(userData, algorithm):
+    if userData.x_train or userData.y_train == []:
+        x_train, y_train = getTrainingData(userData)
+    else:
+        x_train = userData.x_train
+        y_train = userData.y_train
     if algorithm == "random-forest":
-        clf = randomForest(x_train, y_train)
+        clf, pred, test = randomForest(x_train, y_train)
     if algorithm == "naive-bayes":
-        clf = naiveBayes(x_train, y_train)
+        clf, pred, test = naiveBayes(x_train, y_train)
     if algorithm == "kNN":
-        clf = kNN(x_train, y_train)
+        clf, pred, test = kNN(x_train, y_train)
     if algorithm == "SVM":
-        clf = SVM(x_train, y_train)
+        clf, pred, test = SVM(x_train, y_train)
     if algorithm == "decision-tree":
-        clf = decisionTree(x_train, y_train)
-    return clf
+        clf, pred, test = decisionTree(x_train, y_train)
+    return clf, pred, test
+
+def profilePartitioning(userData):
+    if userData.x_train or userData.y_train == []:
+        x_train, y_train = getTrainingData(userData)
+    else:
+        x_train = userData.x_train
+        y_train = userData.y_train
+    cluster, n = createCluster(x_train)
+
+    # Create Lists for each Cluster
+    clustered_items = []
+    for i in range(0,n):
+        clustered_items.append([])
+
+    # TODO ordne y Werte ebenso richtig zu
+    for i in range(0, len(cluster)):
+        for j in range(0, n):
+            if cluster[i] == j:
+                clustered_items[j].append(x_train[i])
+
+    for i in range(0,n):
+        print("-------------------" + str(i) + "tes Cluster ----------------------")
+        print(clustered_items[i])
+
+
+
+
+
+def createCluster(x_train):
+    n=3
+    km = KMeans(n_clusters=n,
+                init='random',
+                n_init=10,
+                max_iter=300,
+                tol=1e-04,
+                random_state=0)
+    y_km = km.fit_predict(x_train)
+    return y_km, n
 
 
 # TODO Schaue im Buch nach Parametern
 def SVM(x,y):
     clf = SVC(gamma=2, C=1)
-    clf = bench(clf, x, y)
-    return clf
+    clf, pred, test = bench(clf, x, y)
+    return clf, pred, test
 
 def naiveBayes(x,y):
     clf = MultinomialNB(alpha=0.01)
-    clf = bench(clf, x, y)
-    return clf
+    clf, pred, test = bench(clf, x, y)
+    return clf, pred, test
 
 # Larger n numbers of neighbors means less noise but makes the classification boundaries less distinct
 def kNN(x,y):
     clf = KNeighborsClassifier(n_neighbors=10)
-    clf = bench(clf, x, y)
-    return clf
+    clf, pred, test = bench(clf, x, y)
+    return clf, pred, test
 
 def randomForest(x,y):
     clf = RandomForestClassifier()
-    clf = bench(clf, x, y)
-    return clf
+    clf, pred, test = bench(clf, x, y)
+    return clf, pred, test
 
 # The maximum depth of the tree
 def decisionTree(x,y):
     clf = DecisionTreeClassifier(max_depth=5)
-    clf = bench(clf, x, y)
-    return clf
+    clf, pred, test = bench(clf, x, y)
+    return clf, pred, test
 
 def bench(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
@@ -76,6 +123,7 @@ def bench(clf, x, y):
 
     pred = clf.predict(X_test)
     print("Prediction: " % pred)
+    print(pred)
 
     score = metrics.accuracy_score(y_test, pred)
     print("accuracy:   %0.3f" % score)
@@ -87,7 +135,7 @@ def bench(clf, x, y):
     print(metrics.confusion_matrix(y_test, pred))
 
     print()
-    return clf
+    return clf, pred, X_test
 
 def benchmark(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)

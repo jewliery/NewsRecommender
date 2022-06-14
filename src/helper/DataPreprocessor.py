@@ -1,27 +1,37 @@
 from helper.DataHelper import *
 from helper.TwitterManager import TwitterManager
 from helper.DataConverter import *
-from models.UserObject import UserObject
+from models.UserObject import User
 from deepdiff import DeepDiff
 import numpy as np
 
 
 class UserData:
 
-    def __init__(self):
+    def __init__(self, user_name):
         self.api = TwitterManager()
-        self.user = User()
+        self.user = convertDictUserToObject(self.api.getUser(user_name))
+        self.following = []
         self.positiveTweets = []
         self.negativeTweets = []
+
+        self.train = []
+        self.x_train = []
+        self.y_train = []
+
+    def setTrainData(self, train=[], x_train=[], y_train=[]):
+        self.train = train
+        self.y_train = y_train
+        self.x_train = x_train
 
     def setCurrentUser(self, user_name):
         self.user = self.api.getUser(user_name)
 
     # Collects all negative rated data from user,
     def getNegativeDataFromUser(self, user_id):
-        following = self.api.getAllFollowing(user_id)['data']
+        self.following = self.api.getAllFollowing(user_id)['data']
         all_tweets = np.array([])
-        for u in following:
+        for u in self.following:
             tweets = self.api.getUserTimeline(int(u['id']))
             #tweets = api.getAllUsersTweets(int(u['id']))
             tweet_objects = convertTweetsToObjects(tweets)
@@ -35,15 +45,13 @@ class UserData:
         return tweetObjects
 
     # Collects all Data (Positive and Negative) from User
-    def getDataFromUser(self, user_name):
-        user = self.api.getUser(user_name)
-        user_id = user['data']['id']
-        negative = getNegativeDataFromUser(user_id)
-        positive = getPositiveDataFromUser(user_id)
+    def getDataFromUser(self):
+        negative = self.getNegativeDataFromUser(self.user.id)
+        positive = self.getPositiveDataFromUser(self.user.id)
         set_difference = set(negative) - set(positive)
-        list_difference = list(set_difference)
-        # list_difference = differenceOfTweetLists(negative, positive)
-        return positive, list_difference, user
+        self.positiveTweets = positive
+        self.negativeTweets = list(set_difference)
+        return self.positiveTweets, self.negativeTweets
 
     def getTrendsList(self):
         trends = self.api.getTrends()
@@ -54,9 +62,15 @@ class UserData:
                 trend_list.append(trend['name'])
         return trend_list
 
-
+# Soll Menge liefern, welche der User noch nicht kennt
     def getData(self):
-        return
+        all_tweets = np.array([])
+        for u in self.following:
+            tweets = self.api.getUserTimeline(int(u['id']))
+            #tweets = api.getAllUsersTweets(int(u['id']))
+            tweet_objects = convertTweetsToObjects(tweets)
+            all_tweets = np.append(all_tweets, tweet_objects, axis=0)
+        return all_tweets
 
 
     #-----------------------------------Preprocessing-----------------------------------

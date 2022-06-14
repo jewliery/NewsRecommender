@@ -8,7 +8,7 @@ from helper.FeatureSelection import *
 from helper.DataHelper import *
 from helper.Learner import *
 from helper.Visualizer import *
-from helper.DataPreprocessor import *
+from helper.DataPreprocessor import UserData
 from helper.Modeling import *
 from helper.Recommender import *
 
@@ -38,7 +38,15 @@ from helper.Recommender import *
 #-----------------------------------Test----------------------------------
 
 #testModels("jules3x")
-clf = createUserModel("jules3x", "random-forest")
+#clf = createUserModel("jules3x", "random-forest")
+
+userData = UserData(user_name="jules3x")
+# print(userData.user.name)
+# clf, pred, test = createUserModel(userData, "decision-tree")
+# getRecommendationList(pred, test, userData)
+
+profilePartitioning(userData)
+
 
 
 
