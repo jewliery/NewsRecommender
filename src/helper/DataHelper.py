@@ -66,7 +66,14 @@ def getAllMyLikedVectorData():
     tweets = api.getAllMyLikedTweets()
     tweetObjects = convertDictTweetsToObjects(tweets)
     vector, features = createVectors(tweetObjects)
-    return vector
+    return vector, features
+
+# Returns every Tweet I have liked as vector (only text)
+def getAllMyLikedTextVectorData():
+    tweets = api.getAllMyLikedTweets()
+    tweetObjects = convertDictTweetsToObjects(tweets)
+    vector, features = createOnlyTextVectors(tweetObjects)
+    return vector, features
 
 # Returns every Tweet I have liked as TweetObject
 def getAllMyLikedRawData():

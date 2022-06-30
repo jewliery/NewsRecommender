@@ -33,7 +33,6 @@ class UserData:
         all_tweets = np.array([])
         for u in self.following:
             tweets = self.api.getUserTimeline(int(u['id']))
-            #tweets = api.getAllUsersTweets(int(u['id']))
             tweet_objects = convertTweetsToObjects(tweets)
             all_tweets = np.append(all_tweets, tweet_objects, axis=0)
         return all_tweets

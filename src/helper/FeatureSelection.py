@@ -36,11 +36,8 @@ def lemmatize(texts):
 def vectorizeTexts(texts):
     vectorizer = CountVectorizer(stop_words=stop_words_de)
     X = vectorizer.fit_transform(texts)
-    #print("Größe des Vokabulars: {}".format(len(vectorizer.vocabulary_)))
-    #print("Inhalt des Vokabulars:\n {}".format(vectorizer.vocabulary_))
     features = vectorizer.get_feature_names_out()
     vector = X.toarray()
-    #print("Merkmale:\n{}".format(features[:50]))
     return vector, features
 
 # Vectorize Text Data with TfIdf
@@ -76,6 +73,14 @@ def createVectors(tweets):
     features = np.concatenate([featuresText, featuresHashtags], axis=0).tolist()
     vector = np.concatenate([vectorTexts, vectorHashtags], axis=1).tolist()
     return vector, features
+
+# Creates Vector consisting of Text from Tweet
+def createOnlyTextVectors(tweets):
+    texts = []
+    for tweet in tweets:
+        texts.append(tweet.text)
+    vectorTexts, featuresText = vectorizeTexts(texts)
+    return vectorTexts, featuresText
 
 def createVectorsTfIdf(tweets):
     texts = []

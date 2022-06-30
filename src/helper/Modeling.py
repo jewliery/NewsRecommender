@@ -53,38 +53,122 @@ def profilePartitioning(userData):
     else:
         x_train = userData.x_train
         y_train = userData.y_train
-    cluster, n = createCluster(x_train)
 
-    # Create Lists for each Cluster
-    clustered_items = []
+    n = determineN(x_train)
+    cluster = createCluster(x_train=x_train, n=n)
+    print("Old Number of Clusters: " + str(n))
+
+    # Create Lists for each Cluster and save y Value
+    clustered_xvalue = []
+    clustered_yvalue = []
+    clustered_tweets = []
     for i in range(0,n):
-        clustered_items.append([])
+        clustered_xvalue.append([])
+        clustered_yvalue.append([])
+        clustered_tweets.append([])
 
-    # TODO ordne y Werte ebenso richtig zu
     for i in range(0, len(cluster)):
         for j in range(0, n):
             if cluster[i] == j:
-                clustered_items[j].append(x_train[i])
+                clustered_xvalue[j].append(x_train[i])
+                clustered_yvalue[j].append(y_train[i])
+                clustered_tweets[j].append(userData.train[i])
+    print(clustered_yvalue)
+    #printCluster(n,clustered_tweets)
 
+    smallest_cluster = [] # List with indizes of Cluster size smaller than 6
     for i in range(0,n):
+        if len(clustered_xvalue[i]) < 4:
+            smallest_cluster.append(i)
+            print("Index with small Cluster " + str(i))
+    # Merge small clusters to one, do the same for y value
+    bigger_cluster_x = []
+    bigger_cluster_y = []
+    bigger_cluster = []
+
+    # Falls es ein Cluster gibt welches zu klein ist, verbinde es mit zweikleinsten Cluster
+    if len(smallest_cluster) > 0:
+        for s in smallest_cluster:
+            bigger_cluster_x += clustered_xvalue[s]
+            bigger_cluster_y += clustered_yvalue[s]
+            bigger_cluster += clustered_tweets[s]
+        for s in smallest_cluster:
+            clustered_xvalue.remove(clustered_xvalue[s])
+            clustered_yvalue.remove(clustered_yvalue[s])
+            clustered_tweets.remove(clustered_tweets[s])
+
+        index = 1000
+        for i in range(0,n-1):
+            if len(clustered_xvalue[i])<index:
+                index = i
+
+        clustered_xvalue[index] += bigger_cluster_x
+        clustered_yvalue[index] += bigger_cluster_y
+        clustered_tweets[index] += bigger_cluster
+        n = len(clustered_xvalue)
+        print("New Number of Clusters: " + str(n))
+
+    #printCluster(n, clustered_tweets)
+
+    results = []
+    clf = DecisionTreeClassifier(max_depth=10)
+    #clf = RandomForestClassifier()
+    for i in range(0,n):
+        result = benchmark(clf, clustered_xvalue[i], clustered_yvalue[i])
+        results.append(result)
+        print(result)
+
+    avg_results = averageResults(results)
+    results.append(avg_results)
+    showResults(results)
+
+def anomaliesExceptions():
+    if userData.x_train or userData.y_train == []:
+        x_train, y_train = getTrainingData(userData)
+    else:
+        x_train = userData.x_train
+        y_train = userData.y_train
+    clf, pred, test = naiveBayesProbs(x_train, y_train)
+
+
+def printCluster(n, clustered_tweets):
+    for i in range(0, n):
         print("-------------------" + str(i) + "tes Cluster ----------------------")
-        print(clustered_items[i])
+        for tweet in clustered_tweets[i]:
+            tweet.print(False)
 
+def determineN(x_train):
+    distortions = []
+    for i in range(1,6):
+        km = KMeans(n_clusters=i,
+                    init='random',
+                    n_init=10,
+                    max_iter=300,
+                    random_state=0)
+        km.fit(x_train)
+        distortions.append(km.inertia_)
+    current_n = 0
+    for i in range(0,3):
+        if distortions[i]-distortions[i+1] > distortions[i+1]-distortions[i+2]:
+            current_n = i+1
+        else:
+            current_n = 2
+    plt.plot(range(1,6), distortions, marker='o')
+    plt.xlabel('Anzahl der Cluster')
+    plt.ylabel('Verzerrung')
+    plt.show()
+    return current_n
 
-
-
-
-def createCluster(x_train):
-    n=3
+def createCluster(x_train, n=3):
     km = KMeans(n_clusters=n,
                 init='random',
                 n_init=10,
                 max_iter=300,
-                tol=1e-04,
+                tol=1e-02,
                 random_state=0)
     y_km = km.fit_predict(x_train)
-    return y_km, n
-
+    print("Verzerrung: %.2f" % km.inertia_)
+    return y_km
 
 # TODO Schaue im Buch nach Parametern
 def SVM(x,y):
@@ -92,10 +176,41 @@ def SVM(x,y):
     clf, pred, test = bench(clf, x, y)
     return clf, pred, test
 
+def naiveBayesProbs(x,y):
+    clf = MultinomialNB(alpha=0.01)
+    clf, pred, pred_proba, test = bench_proba(clf, x, y)
+    #sort_probs_elements(pred_proba, test)
+    sort_diff_elements(pred_proba, test)
+    return clf, pred, test
+
 def naiveBayes(x,y):
     clf = MultinomialNB(alpha=0.01)
     clf, pred, test = bench(clf, x, y)
     return clf, pred, test
+
+def sort_probs_elements(pred, X):
+    x_prob = []
+    for i in range(0, len(X)):
+        key_val = X[i]
+        key_val.append(pred[i][0])
+        key_val.append(pred[i][1])
+        x_prob.append(key_val)
+
+    sorted_list = sorted(x_prob, key=lambda x: x[-1], reverse=True)
+    for el in sorted_list:
+        print(el)
+
+def sort_diff_elements(pred, X):
+    x_prob = []
+    for i in range(0, len(X)):
+        key_val = X[i]
+        key_val.append(abs(pred[i][1]-pred[i][0]))
+        x_prob.append(key_val)
+
+    sorted_list = sorted(x_prob, key=lambda x: x[-1])
+    for el in sorted_list:
+        print(el)
+
 
 # Larger n numbers of neighbors means less noise but makes the classification boundaries less distinct
 def kNN(x,y):
@@ -137,6 +252,33 @@ def bench(clf, x, y):
     print()
     return clf, pred, X_test
 
+def bench_proba(clf, x, y):
+    X_train, X_test, y_train, y_test = train_test_split(x, y)
+    print("_" * 80)
+    print("Training: ")
+    print(clf)
+    clf.fit(X_train, y_train)
+
+    pred_proba = clf.predict_proba(X_test)
+    print("Prediction: " % pred_proba)
+    print(pred_proba)
+
+    pred = clf.predict(X_test)
+    print("Prediction: " % pred)
+    print(pred)
+
+    score = metrics.accuracy_score(y_test, pred)
+    print("accuracy:   %0.3f" % score)
+
+    print("classification report:")
+    print(metrics.classification_report(y_test, pred))
+
+    print("confusion matrix:")
+    print(metrics.confusion_matrix(y_test, pred))
+
+    print()
+    return clf, pred, pred_proba, X_test
+
 def benchmark(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
@@ -164,6 +306,19 @@ def benchmark(clf, x, y):
     print()
     clf_descr = str(clf).split("(")[0]
     return clf_descr, score, train_time, test_time
+
+def averageResults(results):
+    n = 0
+    score = 0
+    train_time = 0
+    test_time = 0
+    for r in results:
+        score += r[1]
+        train_time += r[2]
+        test_time += r[3]
+        n += 1
+    avg_results = ["Average Results", score/n, train_time/n, test_time/n]
+    return avg_results
 
 def testModels(user_name):
     positive, negative = getDataFromUser(user_name)

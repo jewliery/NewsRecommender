@@ -98,7 +98,7 @@ class TwitterManager:
         user = self.client2.get_users_following(id=user_id, max_results=5)
         return user
 
-    def getAllUsersTweets(self, user_id, max_results=5):
+    def getAllUsersTweets(self, user_id, max_results=10):
         tweets = self.client2.get_users_tweets(id=user_id, max_results=max_results, tweet_fields=['entities','author_id','lang'])
         return tweets
 
