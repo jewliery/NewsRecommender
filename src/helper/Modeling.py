@@ -4,6 +4,7 @@ from sklearn import metrics
 from helper.DataPreprocessor import *
 from helper.DataHelper import *
 from helper.FeatureSelection import *
+from helper.Evaluation import Evaluation
 from sklearn.utils.extmath import density
 from sklearn.feature_selection import SelectFromModel
 from sklearn.pipeline import Pipeline
@@ -19,6 +20,11 @@ from sklearn.cluster import KMeans
 from time import time
 import matplotlib.pyplot as plt
 import numpy as np
+
+evaluation = Evaluation()
+
+def showEvaluation():
+    evaluation.showResults()
 
 def getTrainingData(userData):
     positive, negative = userData.getDataFromUser()
@@ -36,16 +42,19 @@ def createUserModel(userData, algorithm):
         x_train = userData.x_train
         y_train = userData.y_train
     if algorithm == "random-forest":
-        clf, pred, test = randomForest(x_train, y_train)
+        clf, pred, x_test, y_test, results = randomForest(x_train, y_train)
     if algorithm == "naive-bayes":
-        clf, pred, test = naiveBayes(x_train, y_train)
+        clf, pred, x_test, y_test, results = naiveBayes(x_train, y_train)
     if algorithm == "kNN":
-        clf, pred, test = kNN(x_train, y_train)
+        clf, pred, x_test, y_test, results = kNN(x_train, y_train)
     if algorithm == "SVM":
-        clf, pred, test = SVM(x_train, y_train)
+        clf, pred, x_test, y_test, results = SVM(x_train, y_train)
     if algorithm == "decision-tree":
-        clf, pred, test = decisionTree(x_train, y_train)
-    return clf, pred, test
+        clf, pred, x_test, y_test, results = decisionTree(x_train, y_train)
+    evaluation.setResult("plain", results)
+    return clf, pred, x_test, y_test, results
+
+#--------------------------Profile Partitioning---------------------------#
 
 def profilePartitioning(userData):
     if userData.x_train or userData.y_train == []:
@@ -56,7 +65,7 @@ def profilePartitioning(userData):
 
     n = determineN(x_train)
     cluster = createCluster(x_train=x_train, n=n)
-    print("Old Number of Clusters: " + str(n))
+    #print("Old Number of Clusters: " + str(n))
 
     # Create Lists for each Cluster and save y Value
     clustered_xvalue = []
@@ -73,7 +82,7 @@ def profilePartitioning(userData):
                 clustered_xvalue[j].append(x_train[i])
                 clustered_yvalue[j].append(y_train[i])
                 clustered_tweets[j].append(userData.train[i])
-    print(clustered_yvalue)
+    #print(clustered_yvalue)
     #printCluster(n,clustered_tweets)
 
     smallest_cluster = [] # List with indizes of Cluster size smaller than 6
@@ -109,7 +118,6 @@ def profilePartitioning(userData):
         print("New Number of Clusters: " + str(n))
 
     #printCluster(n, clustered_tweets)
-
     results = []
     clf = DecisionTreeClassifier(max_depth=10)
     #clf = RandomForestClassifier()
@@ -119,17 +127,10 @@ def profilePartitioning(userData):
         print(result)
 
     avg_results = averageResults(results)
-    results.append(avg_results)
-    showResults(results)
+    # results.append(avg_results)
+    # showResults(results)
 
-def anomaliesExceptions():
-    if userData.x_train or userData.y_train == []:
-        x_train, y_train = getTrainingData(userData)
-    else:
-        x_train = userData.x_train
-        y_train = userData.y_train
-    clf, pred, test = naiveBayesProbs(x_train, y_train)
-
+    evaluation.setResult("profile_partitioning", avg_results)
 
 def printCluster(n, clustered_tweets):
     for i in range(0, n):
@@ -170,23 +171,48 @@ def createCluster(x_train, n=3):
     print("Verzerrung: %.2f" % km.inertia_)
     return y_km
 
-# TODO Schaue im Buch nach Parametern
-def SVM(x,y):
-    clf = SVC(gamma=2, C=1)
-    clf, pred, test = bench(clf, x, y)
-    return clf, pred, test
+#---------------------------Anomalies Exceptions-------------------------#
+
+def anomaliesExceptions(userData, k):
+    if userData.x_train or userData.y_train == []:
+        x_train, y_train = getTrainingData(userData)
+    else:
+        x_train = userData.x_train
+        y_train = userData.y_train
+    clf, pred, pred_proba, test_x, test_y = naiveBayesProbs(x_train, y_train)
+    sorted_list, y_real = sort_diff_elements(pred_proba, test_x, test_y)
+    y_pred = np.zeros(len(sorted_list)).tolist()
+    for i in range(0, k):
+        sorted_list[i].pop() # Letztes Element entfernen - pred value
+        sorted_list[i].pop(0) # Erstes Element entfernen - y value
+        y_pred[i] = 1 #Fill with ones, because the items are recommended
+    recommendation_list = sorted_list[0:k]
+    results = evaluate(y_real[0:k], y_pred[0:k]) # Precision/Recall@k
+    #results = evaluate(y_real, y_pred)
+    evaluation.setResult("anomalies_exceptions", results)
+    return recommendation_list
+
+def evaluate(y_test, pred):
+    results = []
+    score = metrics.accuracy_score(y_test, pred)
+    print("accuracy:   %0.3f" % score)
+    results.append(score)
+
+    precision = metrics.precision_score(y_test, pred)
+    print("precision:   %0.3f" % precision)
+    results.append(precision)
+
+    recall = metrics.recall_score(y_test, pred)
+    print("recall:   %0.3f" % recall)
+    results.append(recall)
+
+    return results
+
 
 def naiveBayesProbs(x,y):
     clf = MultinomialNB(alpha=0.01)
-    clf, pred, pred_proba, test = bench_proba(clf, x, y)
-    #sort_probs_elements(pred_proba, test)
-    sort_diff_elements(pred_proba, test)
-    return clf, pred, test
-
-def naiveBayes(x,y):
-    clf = MultinomialNB(alpha=0.01)
-    clf, pred, test = bench(clf, x, y)
-    return clf, pred, test
+    clf, pred, pred_proba, test_x, test_y = bench_proba(clf, x, y)
+    return clf, pred, pred_proba, test_x, test_y
 
 def sort_probs_elements(pred, X):
     x_prob = []
@@ -200,34 +226,50 @@ def sort_probs_elements(pred, X):
     for el in sorted_list:
         print(el)
 
-def sort_diff_elements(pred, X):
+def sort_diff_elements(pred, X, y):
     x_prob = []
+    y_test = []
     for i in range(0, len(X)):
-        key_val = X[i]
+        key_val = [y[i]] + X[i]
         key_val.append(abs(pred[i][1]-pred[i][0]))
         x_prob.append(key_val)
 
     sorted_list = sorted(x_prob, key=lambda x: x[-1])
-    for el in sorted_list:
-        print(el)
 
+    for i in range(0, len(sorted_list)):
+        y_test.append(sorted_list[i][0]) # Create List with real y values
 
+    return sorted_list, y_test
+
+#--------------------------------Classifier--------------------------------#
 # Larger n numbers of neighbors means less noise but makes the classification boundaries less distinct
 def kNN(x,y):
     clf = KNeighborsClassifier(n_neighbors=10)
-    clf, pred, test = bench(clf, x, y)
-    return clf, pred, test
+    clf, pred, x_test, y_test, results = bench(clf, x, y)
+    return clf, pred, x_test, y_test, results
+
+def naiveBayes(x,y):
+    clf = MultinomialNB(alpha=0.01)
+    clf, pred, x_test, y_test, results = bench(clf, x, y)
+    return clf, pred, x_test, y_test, results
+
+def SVM(x,y):
+    clf = SVC(gamma=2, C=1)
+    clf, pred, x_test, y_test, results = bench(clf, x, y)
+    return clf, pred, x_test, y_test, results
 
 def randomForest(x,y):
     clf = RandomForestClassifier()
-    clf, pred, test = bench(clf, x, y)
-    return clf, pred, test
+    clf, pred, x_test, y_test, results = bench(clf, x, y)
+    return clf, pred, x_test, y_test, results
 
 # The maximum depth of the tree
 def decisionTree(x,y):
     clf = DecisionTreeClassifier(max_depth=5)
-    clf, pred, test = bench(clf, x, y)
-    return clf, pred, test
+    clf, pred, x_test, y_test, results = bench(clf, x, y)
+    return clf, pred, x_test, y_test, results
+
+#--------------------------------Benchmarks--------------------------------#
 
 def bench(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
@@ -235,13 +277,22 @@ def bench(clf, x, y):
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)
+    results = []
 
     pred = clf.predict(X_test)
     print("Prediction: " % pred)
-    print(pred)
 
     score = metrics.accuracy_score(y_test, pred)
     print("accuracy:   %0.3f" % score)
+    results.append(score)
+
+    precision = metrics.precision_score(y_test, pred)
+    print("precision:   %0.3f" % precision)
+    results.append(precision)
+
+    recall = metrics.recall_score(y_test, pred)
+    print("recall:   %0.3f" % recall)
+    results.append(recall)
 
     print("classification report:")
     print(metrics.classification_report(y_test, pred))
@@ -250,7 +301,7 @@ def bench(clf, x, y):
     print(metrics.confusion_matrix(y_test, pred))
 
     print()
-    return clf, pred, X_test
+    return clf, pred, X_test, y_test, results
 
 def bench_proba(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
@@ -265,7 +316,12 @@ def bench_proba(clf, x, y):
 
     pred = clf.predict(X_test)
     print("Prediction: " % pred)
-    print(pred)
+
+    precision = metrics.precision_score(y_test, pred)
+    print("precision:   %0.3f" % precision)
+
+    recall = metrics.recall_score(y_test, pred)
+    print("recall:   %0.3f" % recall)
 
     score = metrics.accuracy_score(y_test, pred)
     print("accuracy:   %0.3f" % score)
@@ -277,22 +333,17 @@ def bench_proba(clf, x, y):
     print(metrics.confusion_matrix(y_test, pred))
 
     print()
-    return clf, pred, pred_proba, X_test
+    return clf, pred, pred_proba, X_test, y_test
 
 def benchmark(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
     print("Training: ")
     print(clf)
-    t0 = time()
     clf.fit(X_train, y_train)
-    train_time = time() - t0
-    print("train time: %0.3fs" % train_time)
 
-    t0 = time()
     pred = clf.predict(X_test)
-    test_time = time() - t0
-    print("test time:  %0.3fs" % test_time)
+    print("Prediction: " % pred)
 
     score = metrics.accuracy_score(y_test, pred)
     print("accuracy:   %0.3f" % score)
@@ -300,24 +351,27 @@ def benchmark(clf, x, y):
     print("classification report:")
     print(metrics.classification_report(y_test, pred))
 
+    precision = metrics.precision_score(y_test, pred)
+    recall = metrics.recall_score(y_test, pred)
+
     print("confusion matrix:")
     print(metrics.confusion_matrix(y_test, pred))
 
     print()
-    clf_descr = str(clf).split("(")[0]
-    return clf_descr, score, train_time, test_time
+    #clf_descr = str(clf).split("(")[0]
+    return score, precision, recall
 
 def averageResults(results):
     n = 0
     score = 0
-    train_time = 0
-    test_time = 0
+    precision = 0
+    recall = 0
     for r in results:
-        score += r[1]
-        train_time += r[2]
-        test_time += r[3]
+        score += r[0]
+        precision += r[1]
+        recall += r[2]
         n += 1
-    avg_results = ["Average Results", score/n, train_time/n, test_time/n]
+    avg_results = [score/n, precision/n, recall/n]
     return avg_results
 
 def testModels(user_name):
@@ -341,20 +395,17 @@ def testModels(user_name):
 
     showResults(results)
 
-
 def showResults(results):
     indices = np.arange(len(results))
     results = [[x[i] for x in results] for i in range(4)]
 
-    clf_names, score, training_time, test_time = results
-    training_time = np.array(training_time) / np.max(training_time)
-    test_time = np.array(test_time) / np.max(test_time)
+    clf_names, score, precision, recall = results
 
     plt.figure(figsize=(12, 8))
     plt.title("Score")
-    plt.barh(indices, score, 0.2, label="score", color="navy")
-    plt.barh(indices + 0.3, training_time, 0.2, label="training time", color="c")
-    plt.barh(indices + 0.6, test_time, 0.2, label="test time", color="darkorange")
+    plt.barh(indices, score, 0.2, label="Score", color="navy")
+    plt.barh(indices + 0.3, precision, 0.2, label="Precision", color="c")
+    plt.barh(indices + 0.6, recall, 0.2, label="Recall", color="darkorange")
     plt.yticks(())
     plt.legend(loc="best")
     plt.subplots_adjust(left=0.25)

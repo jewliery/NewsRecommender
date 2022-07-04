@@ -35,10 +35,15 @@ from helper.Recommender import *
 #clf = createUserModel("jules3x", "random-forest")
 
 userData = UserData(user_name="jules3x")
-#clf, pred, test = createUserModel(userData, "random-forest")
-clf, pred, test = createUserModel(userData, "naive-bayes")
-#boundedGreedySelection(pred, test, userData, 5)
-#profilePartitioning(userData)
+clf, pred, x_test, y_test, results = createUserModel(userData, "random-forest")
+boundedGreedySelection(pred, x_test, y_test, userData, 5, results)
+
+profilePartitioning(userData)
+
+rec = anomaliesExceptions(userData, 5)
+
+showEvaluation()
+
 
 
 

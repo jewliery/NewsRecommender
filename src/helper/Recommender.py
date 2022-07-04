@@ -1,14 +1,19 @@
 from helper.Modeling import *
+from helper.Modeling import evaluation
 from helper.DataPreprocessor import UserData
 from sklearn.metrics import pairwise_distances
+from helper.Evaluation import Evaluation
+import numpy as np
 
 # Nimmt die Testdaten und zeigt welche Tweets empfohlen wurden
-def getRecommendationList(pred, test, userData):
+def getRecommendationList(pred, x_test, y_test, userData):
     recommendVectors = []
+    recommended_y_value = []
     # Wenn 1 ist suche tweet und empfehle diesen
     for i in range(0, len(pred)):
         if pred[i] == 1:
-            recommendVectors.append(test[i])
+            recommendVectors.append(x_test[i])
+            recommended_y_value.append(y_test[i])
 
     # Finde die dazu passenden Tweets
     recommend = []
@@ -17,7 +22,7 @@ def getRecommendationList(pred, test, userData):
             if userData.x_train[i] == r:
                 recommend.append(userData.train[i])
                 #userData.train[i].print(False)
-    return recommend, recommendVectors
+    return recommend, recommendVectors, recommended_y_value
 
 def getRecommendationVectors(pred, test):
     recommendVectors = []
@@ -27,8 +32,10 @@ def getRecommendationVectors(pred, test):
             recommendVectors.append(test[i])
     return recommendVectors
 
-def boundedGreedySelection(pred, test, userData, k):
-    tweets, vec = getRecommendationList(pred, test, userData)
+def boundedGreedySelection(pred, x_test, y_test, userData, k, results):
+    #evaluation.setResult("bgs", results)
+    tweets, vec, y_all_values = getRecommendationList(pred, x_test, y_test, userData)
+    y_values = []
     r = vec
     dist = getDistance(r)
     s = []
@@ -46,11 +53,11 @@ def boundedGreedySelection(pred, test, userData, k):
     s.append(r[tupel[1]])
     r.remove(r[tupel[0]])
     r.remove(r[tupel[1]])
-    #tweets[tupel[0]].print(False)
-    #tweets[tupel[1]].print(False)
+    y_values.append(y_all_values[tupel[0]])
+    y_values.append(y_all_values[tupel[1]])
 
     # Add item from r with maximum item-set distance from s till k is reached
-    while len(s) <= k:
+    while len(s) < k:
         dist = getDistance(r, s)
         max_dist = 0
         index = 0
@@ -63,7 +70,14 @@ def boundedGreedySelection(pred, test, userData, k):
                 max_dist = avg_dist
             index = i
         s.append(r[index])
+        y_values.append(y_all_values[index])
         r.remove(r[index])
+
+    print("Y Values")
+    print(y_values)
+    pred_values = np.ones(k).tolist()
+    results = evaluate(y_values, pred_values)
+    evaluation.setResult("bgs", results)
     return s
 
 def getDistance(x, y=[]):
@@ -72,4 +86,5 @@ def getDistance(x, y=[]):
     else:
         distance = pairwise_distances(X=x,metric='euclidean')
     return distance
+
 
