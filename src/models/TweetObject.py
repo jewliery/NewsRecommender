@@ -1,6 +1,5 @@
 # TweetObject, this class will contain a Tweet
 import string
-from models.Rating import Rating
 
 
 def createHashtagString(hashtags):
@@ -11,17 +10,12 @@ def createHashtagString(hashtags):
 
 class Tweet:
 
-    def __init__(self, id=0, text='', hashtags=[], user=None, popular=False, language='de', favorited=False,
-                 retweeted=False, klick=0, sensitive=False):
+    def __init__(self, id=0, text='', hashtags=[], user=None):
         self.id: int = id
         self.text: string = text
         self.hashtags = createHashtagString(hashtags)
         self.user: User = user
-        self.popular: bool = popular
-        self.language: string = language
-        self.rating: Rating = Rating(favorited, retweeted, klick)
-        self.sensitive: bool = sensitive
-        self.keyValuePairs: list = self.createKeyValuePairs()
+        #self.keyValuePairs: list = self.createKeyValuePairs()
 
     def __hash__(self):
         return hash(self.text)
@@ -39,15 +33,6 @@ class Tweet:
         vector = {'popular': self.popular, 'language': self.language}
         return vector
 
-
-    def favoriteTweet(self):
-        self.rating = Rating(True, self.rating.retweeted, self.rating.klicks)
-
-    def retweetTweet(self):
-        self.rating = Rating(self.rating.favorited, True, self.rating.klicks)
-
-    def klickTweet(self):
-        self.rating = Rating(self.rating.favorited, self.rating.retweeted, self.rating.klicks + 1)
 
     def print(self, showUser=True):
         print('')

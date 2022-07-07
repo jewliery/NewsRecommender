@@ -1,4 +1,3 @@
-from models.Rating import Rating
 from models.UserObject import User
 from models.TweetObject import Tweet
 from helper.TwitterManager import TwitterManager
@@ -19,22 +18,24 @@ def convertTweetsToObjects(tweets):
     for tweet in tweets:
         if isGermanTweet(tweet):
             user = convertUserToObject(tweet.user)
-            rating = Rating(tweet.favorited, tweet.retweeted, 0)
             hashtags = []
             for tag in tweet.entities['hashtags']:
                 hashtags.append(tag['text'])
-            tweetObject = Tweet(tweet.id, tweet.text, hashtags, user, False, tweet.lang, rating, False)
+            tweetObject = Tweet(id=tweet.id, text=tweet.text, hashtags=hashtags, user=user)
             tweetObjects.append(tweetObject)
     return tweetObjects
 
 def convertDictTweetsToObjects(tweets, addUser=False):
     tweetObjects = []
     tweetsData = tweets['data']
+    count = 0
     for tweet in tweetsData:
         if isGermanTweet(tweet):
             if addUser:
-                u = api.getUser(user_id=tweet['author_id'])
-                user = convertDictUserToObject(u)
+                #u = api.getUser(user_id=tweet['author_id'])
+                #user = convertDictUserToObject(u)
+                u = api.getUser1(user_id=tweet['author_id'])
+                user = convertUserToObject(u)
             elif not addUser:
                 user = User()
             hashtags = []
@@ -45,7 +46,8 @@ def convertDictTweetsToObjects(tweets, addUser=False):
                 hashtags.append("")
             tweetObject = Tweet(id=tweet['id'], text=tweet['text'], hashtags=hashtags, user=user)
             tweetObjects.append(tweetObject)
-    return tweetObjects
+        count+=1
+    return tweetObjects, count
 
 
 def convertUserToObject(user):

@@ -44,26 +44,13 @@ class TwitterManager:
         retweets = self.api.get_retweets_of_me()
         return retweets
 
-    #-------------------------------API V1.1---------------------------------
-    # def getRandomTweets(self):
-    #     ml = MyStreamListener(self.consumer_key,
-    #                             self.consumer_secret,
-    #                             self.access_token,
-    #                             self.access_token_secret)
-    #     stream = ml.createStream(self.consumer_key,
-    #                             self.consumer_secret,
-    #                             self.access_token,
-    #                             self.access_token_secret)
-    #     tweets = stream.filter(locations=self.BOUNDING_BOX_DE, threaded=True)
-    #     return tweets
-
     def getTweets(self, query):
         tweets = self.api.search_tweets(q=query, lang="de", result_type="popular")
         return tweets
 
     # Returns Tweets of User with specified ID
-    def getUserTimeline(self, userID):
-        tweets = self.api.user_timeline(user_id=userID)
+    def getUserTimeline(self, userID, count=4):
+        tweets = self.api.user_timeline(user_id=userID, count=count)
         return tweets
 
     def getTrends(self):
@@ -72,6 +59,14 @@ class TwitterManager:
         woeid_hamburg = 656958
         trends = self.api.get_place_trends(id=woeid_berlin)
         return trends
+
+    # ------------------------API V1.1----------------------------
+    def getUser1(self, name='', user_id=0):
+        if name == '':
+            user = self.api.get_user(user_id=user_id)
+        elif user_id == 0:
+            user = self.api.get_user(screen_name=name)
+        return user
 
     #------------------------API V2----------------------------
     # Returns Liked Tweets of User with specified ID
@@ -87,18 +82,18 @@ class TwitterManager:
         if name == '':
             user = self.client2.get_user(id=user_id, user_fields=user_fields)
         elif user_id == 0:
-            user = self.client2.get_user(username=name,user_fields=user_fields)
+            user = self.client2.get_user(username=name, user_fields=user_fields)
         return user
 
     def getAllMyLikedTweets(self):
         tweets = self.client2.get_liked_tweets(id=1504119098950705152, tweet_fields=['entities','possibly_sensitive','author_id','lang','public_metrics'])
         return tweets
 
-    def getAllFollowing(self, user_id):
-        user = self.client2.get_users_following(id=user_id, max_results=5)
+    def getAllFollowing(self, user_id, max_results=5):
+        user = self.client2.get_users_following(id=user_id, max_results=max_results)
         return user
 
-    def getAllUsersTweets(self, user_id, max_results=10):
+    def getAllUsersTweets(self, user_id, max_results=6):
         tweets = self.client2.get_users_tweets(id=user_id, max_results=max_results, tweet_fields=['entities','author_id','lang'])
         return tweets
 

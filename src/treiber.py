@@ -1,6 +1,5 @@
 import json
 #from helper.MyStreamListener import MyStreamListener
-from models.Rating import Rating
 from models.UserObject import User
 from models.TweetObject import Tweet
 from helper.TwitterManager import TwitterManager
@@ -16,9 +15,9 @@ from helper.Recommender import *
 
 #----------------------------Visualization------------------------------
 # tweetVectors, features = getAllMyLikedTextVectorData()
-#showBarGraph(tweetVectors, features)
+# showBarGraph(tweetVectors, features)
 # showBar(tweetVectors, features)
-#show2DVisualization(tweetVectors)
+# show2DVisualization(tweetVectors)
 
 # tweets = api.getAllMyLikedTweets()
 # tweetObjects = convertDictTweetsToObjects(tweets)
@@ -35,13 +34,13 @@ from helper.Recommender import *
 #clf = createUserModel("jules3x", "random-forest")
 
 userData = UserData(user_name="jules3x")
-clf, pred, x_test, y_test, results = createUserModel(userData, "random-forest")
-boundedGreedySelection(pred, x_test, y_test, userData, 5, results)
-
+# testModels(userData)
+# show2DVisualization(userData.x_train)
+createUserModel(userData, "decision-tree")
+clf, pred, x_test, y_test, results = createUserModel(userData, "bgs")
+boundedGreedySelection(pred, x_test, y_test, userData, 10, results)
 profilePartitioning(userData)
-
-rec = anomaliesExceptions(userData, 5)
-
+rec = anomaliesExceptions(userData, 10)
 showEvaluation()
 
 

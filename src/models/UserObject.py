@@ -17,7 +17,7 @@ class User:
         self.api = TwitterManager()
 
     def createKeyValuePairs(self) -> list:
-        vector = {'protected': self.protected, 'followers': self.followers,
+        vector = {'name':self.name, 'protected': self.protected, 'followers': self.followers,
                   'verified': self.verified}
         return vector
 

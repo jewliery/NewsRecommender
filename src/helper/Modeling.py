@@ -29,9 +29,9 @@ def showEvaluation():
 def getTrainingData(userData):
     positive, negative = userData.getDataFromUser()
     tweets = positive + negative
-    y_train = createYdata(positive, negative)
-    #x_train, features = createFullVectorsTfIdf(tweets)
-    x_train, features = createVectorsTfIdf(tweets)
+    y_train = userData.createYdata(positive, negative)
+    x_train, features = createFullVectorsTfIdf(tweets)
+    #x_train, features = createVectorsTfIdf(tweets)
     userData.setTrainData(train=tweets, x_train=x_train, y_train=y_train)
     return x_train, y_train
 
@@ -51,7 +51,17 @@ def createUserModel(userData, algorithm):
         clf, pred, x_test, y_test, results = SVM(x_train, y_train)
     if algorithm == "decision-tree":
         clf, pred, x_test, y_test, results = decisionTree(x_train, y_train)
-    evaluation.setResult("plain", results)
+    if algorithm == "bgs":
+        clf, pred, x_test, y_test, results = randomForest(x_train, y_train)
+
+    if algorithm != "bgs":
+        rec_list = getRecommendationList(pred, x_test)
+        ild = evaluation.getILD(rec_list[0:8])
+        unexp = evaluation.getUnexp(rec_list[0:10], userData.x_train[0:10])
+        results.append(ild)
+        results.append(unexp)
+        evaluation.setResult("plain", results)
+
     return clf, pred, x_test, y_test, results
 
 #--------------------------Profile Partitioning---------------------------#
@@ -65,7 +75,6 @@ def profilePartitioning(userData):
 
     n = determineN(x_train)
     cluster = createCluster(x_train=x_train, n=n)
-    #print("Old Number of Clusters: " + str(n))
 
     # Create Lists for each Cluster and save y Value
     clustered_xvalue = []
@@ -82,8 +91,6 @@ def profilePartitioning(userData):
                 clustered_xvalue[j].append(x_train[i])
                 clustered_yvalue[j].append(y_train[i])
                 clustered_tweets[j].append(userData.train[i])
-    #print(clustered_yvalue)
-    #printCluster(n,clustered_tweets)
 
     smallest_cluster = [] # List with indizes of Cluster size smaller than 6
     for i in range(0,n):
@@ -115,21 +122,26 @@ def profilePartitioning(userData):
         clustered_yvalue[index] += bigger_cluster_y
         clustered_tweets[index] += bigger_cluster
         n = len(clustered_xvalue)
-        print("New Number of Clusters: " + str(n))
 
-    #printCluster(n, clustered_tweets)
     results = []
-    clf = DecisionTreeClassifier(max_depth=10)
-    #clf = RandomForestClassifier()
+    clf = RandomForestClassifier()
+    #clf = DecisionTreeClassifier(max_depth=5)
+    recommended_vectors = []
     for i in range(0,n):
-        result = benchmark(clf, clustered_xvalue[i], clustered_yvalue[i])
+        pred, x_test, score, precision, recall = benchmark(clf, clustered_xvalue[i], clustered_yvalue[i])
+        result = [score, precision, recall]
         results.append(result)
-        print(result)
+        #recommended_vectors.append(getRecommendationList(pred, x_test))
+        recommended_vectors = recommended_vectors + getRecommendationList(pred, x_test)
 
     avg_results = averageResults(results)
     # results.append(avg_results)
     # showResults(results)
 
+    ild = evaluation.getILD(recommended_vectors[0:8])
+    unexp = evaluation.getUnexp(recommended_vectors[0:10], userData.x_train[0:10])
+    avg_results.append(ild)
+    avg_results.append(unexp)
     evaluation.setResult("profile_partitioning", avg_results)
 
 def printCluster(n, clustered_tweets):
@@ -154,10 +166,10 @@ def determineN(x_train):
             current_n = i+1
         else:
             current_n = 2
-    plt.plot(range(1,6), distortions, marker='o')
-    plt.xlabel('Anzahl der Cluster')
-    plt.ylabel('Verzerrung')
-    plt.show()
+    # plt.plot(range(1,6), distortions, marker='o')
+    # plt.xlabel('Anzahl der Cluster')
+    # plt.ylabel('Verzerrung')
+    # plt.show()
     return current_n
 
 def createCluster(x_train, n=3):
@@ -187,8 +199,12 @@ def anomaliesExceptions(userData, k):
         sorted_list[i].pop(0) # Erstes Element entfernen - y value
         y_pred[i] = 1 #Fill with ones, because the items are recommended
     recommendation_list = sorted_list[0:k]
-    results = evaluate(y_real[0:k], y_pred[0:k]) # Precision/Recall@k
-    #results = evaluate(y_real, y_pred)
+    #results = evaluate(y_real[0:k], y_pred[0:k]) # Precision/Recall@k
+    results = evaluate(y_real, y_pred)
+    ild = evaluation.getILD(recommendation_list)
+    unexp = evaluation.getUnexp(recommendation_list[0:10], userData.x_train[0:10])
+    results.append(ild)
+    results.append(unexp)
     evaluation.setResult("anomalies_exceptions", results)
     return recommendation_list
 
@@ -274,6 +290,9 @@ def decisionTree(x,y):
 def bench(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
+    print("Data:")
+    print(y_train)
+    print(y_test)
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)
@@ -283,18 +302,18 @@ def bench(clf, x, y):
     print("Prediction: " % pred)
 
     score = metrics.accuracy_score(y_test, pred)
-    print("accuracy:   %0.3f" % score)
+    print("Accuracy:   %0.3f" % score)
     results.append(score)
 
     precision = metrics.precision_score(y_test, pred)
-    print("precision:   %0.3f" % precision)
+    print("Precision:   %0.3f" % precision)
     results.append(precision)
 
     recall = metrics.recall_score(y_test, pred)
-    print("recall:   %0.3f" % recall)
+    print("Recall:   %0.3f" % recall)
     results.append(recall)
 
-    print("classification report:")
+    print("Classification report:")
     print(metrics.classification_report(y_test, pred))
 
     print("confusion matrix:")
@@ -306,6 +325,9 @@ def bench(clf, x, y):
 def bench_proba(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
+    print("Data:")
+    print(y_train)
+    print(y_test)
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)
@@ -318,13 +340,13 @@ def bench_proba(clf, x, y):
     print("Prediction: " % pred)
 
     precision = metrics.precision_score(y_test, pred)
-    print("precision:   %0.3f" % precision)
+    print("Precision:   %0.3f" % precision)
 
     recall = metrics.recall_score(y_test, pred)
-    print("recall:   %0.3f" % recall)
+    print("Recall:   %0.3f" % recall)
 
     score = metrics.accuracy_score(y_test, pred)
-    print("accuracy:   %0.3f" % score)
+    print("Accuracy:   %0.3f" % score)
 
     print("classification report:")
     print(metrics.classification_report(y_test, pred))
@@ -338,6 +360,9 @@ def bench_proba(clf, x, y):
 def benchmark(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
+    print("Data:")
+    print(y_train)
+    print(y_test)
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)
@@ -346,20 +371,23 @@ def benchmark(clf, x, y):
     print("Prediction: " % pred)
 
     score = metrics.accuracy_score(y_test, pred)
-    print("accuracy:   %0.3f" % score)
+    print("Accuracy:   %0.3f" % score)
 
     print("classification report:")
     print(metrics.classification_report(y_test, pred))
 
     precision = metrics.precision_score(y_test, pred)
+    print("Precision:   %0.3f" % precision)
+
     recall = metrics.recall_score(y_test, pred)
+    print("Recall:   %0.3f" % recall)
 
     print("confusion matrix:")
     print(metrics.confusion_matrix(y_test, pred))
 
     print()
-    #clf_descr = str(clf).split("(")[0]
-    return score, precision, recall
+    clf_descr = str(clf).split("(")[0]
+    return pred, X_test, score, precision, recall#, clf_descr #remove clf_descr again
 
 def averageResults(results):
     n = 0
@@ -374,19 +402,19 @@ def averageResults(results):
     avg_results = [score/n, precision/n, recall/n]
     return avg_results
 
-def testModels(user_name):
-    positive, negative = getDataFromUser(user_name)
-    tweets = positive + negative
-    y_train = createYdata(positive, negative)
-    x_train, features = createVectorsTfIdf(tweets)
+def testModels(userData):
+    if userData.x_train or userData.y_train == []:
+        x_train, y_train = getTrainingData(userData)
+    else:
+        x_train = userData.x_train
+        y_train = userData.y_train
 
     results = []
     for clf, name in (
             (KNeighborsClassifier(n_neighbors=10), "kNN"),
             (RandomForestClassifier(), "Random forest"),
             (MultinomialNB(alpha=0.01), "Naiver-Bayes, Multinominal"),
-            (DecisionTreeClassifier(max_depth=5), "Decision Tree Classifier"),
-            (SVC(gamma=2, C=1), "SVM")
+            (DecisionTreeClassifier(max_depth=5), "Decision Tree Classifier")
 
     ):
         print("=" * 80)
@@ -397,9 +425,10 @@ def testModels(user_name):
 
 def showResults(results):
     indices = np.arange(len(results))
-    results = [[x[i] for x in results] for i in range(4)]
+    results = [[x[i] for x in results] for i in range(6)]
 
-    clf_names, score, precision, recall = results
+    #clf_names, score, precision, recall = results
+    pred, X_test, score, precision, recall, clf_names = results
 
     plt.figure(figsize=(12, 8))
     plt.title("Score")
@@ -416,3 +445,10 @@ def showResults(results):
         plt.text(-0.3, i, c)
 
     plt.show()
+
+def getRecommendationList(pred, x_test):
+    recommendVectors = []
+    for i in range(0, len(pred)):
+        if pred[i] == 1:
+            recommendVectors.append(x_test[i])
+    return recommendVectors

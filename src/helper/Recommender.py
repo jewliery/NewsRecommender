@@ -33,7 +33,6 @@ def getRecommendationVectors(pred, test):
     return recommendVectors
 
 def boundedGreedySelection(pred, x_test, y_test, userData, k, results):
-    #evaluation.setResult("bgs", results)
     tweets, vec, y_all_values = getRecommendationList(pred, x_test, y_test, userData)
     y_values = []
     r = vec
@@ -73,10 +72,14 @@ def boundedGreedySelection(pred, x_test, y_test, userData, k, results):
         y_values.append(y_all_values[index])
         r.remove(r[index])
 
-    print("Y Values")
-    print(y_values)
-    pred_values = np.ones(k).tolist()
-    results = evaluate(y_values, pred_values)
+    # -------------Precision/Recall@k--------------------
+    # pred_values = np.ones(k).tolist()
+    # results = evaluate(y_values, pred_values)
+    # evaluation.setResult("bgs", results)
+    ild = evaluation.getILD(s)
+    unexp = evaluation.getUnexp(s[0:10], userData.x_train[0:10])
+    results.append(ild)
+    results.append(unexp)
     evaluation.setResult("bgs", results)
     return s
 

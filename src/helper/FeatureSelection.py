@@ -55,7 +55,6 @@ def vectorizeData(data, scale=True):
     if scale:
         min_max_scaler = preprocessing.MinMaxScaler()
         vector = min_max_scaler.fit_transform(vector)
-    print(vector)
     features = vectorizer.get_feature_names_out()
     return vector, features
 
@@ -122,7 +121,6 @@ def createFullVectors(tweets):
 def createFullVectorsTfIdf(tweets):
     texts = []
     hashtags = []
-    data = []
     user = []
     no_hashtags = True
     for tweet in tweets:
@@ -130,21 +128,19 @@ def createFullVectorsTfIdf(tweets):
         if tweet.hashtags != " ":
             no_hashtags = False
         hashtags.append(tweet.hashtags)
-        data.append(tweet.keyValuePairs)
         user.append(tweet.user.keyValuePairs)
 
     vectorTexts, featuresText = tfIdfVectorizeTexts(texts)
     if not no_hashtags:
         vectorHashtags, featuresHashtags = tfIdfVectorizeTexts(hashtags)
-    vectorData, featuresData = vectorizeData(data)
     vectorUser, featuresUser = vectorizeData(user)
 
     if not no_hashtags:
-        features = np.concatenate([featuresText, featuresHashtags, featuresData, featuresUser], axis=0).tolist()
-        vector = np.concatenate([vectorTexts, vectorHashtags, vectorData, vectorUser], axis=1).tolist()
+        features = np.concatenate([featuresText, featuresHashtags, featuresUser], axis=0).tolist()
+        vector = np.concatenate([vectorTexts, vectorHashtags, vectorUser], axis=1).tolist()
     else:
-        features = np.concatenate([featuresText, featuresData, featuresUser], axis=0).tolist()
-        vector = np.concatenate([vectorTexts, vectorData, vectorUser], axis=1).tolist()
+        features = np.concatenate([featuresText, featuresUser], axis=0).tolist()
+        vector = np.concatenate([vectorTexts, vectorUser], axis=1).tolist()
     return vector, features
 
 
