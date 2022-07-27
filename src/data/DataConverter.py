@@ -1,8 +1,9 @@
 from models.UserObject import User
 from models.TweetObject import Tweet
-from helper.TwitterManager import TwitterManager
+from data.TwitterManager import TwitterManager
 
 api = TwitterManager()
+
 
 def isGermanTweet(tweet):
     try:
@@ -13,6 +14,7 @@ def isGermanTweet(tweet):
             return True
     return False
 
+
 def convertTweetsToObjects(tweets):
     tweetObjects = []
     for tweet in tweets:
@@ -21,32 +23,32 @@ def convertTweetsToObjects(tweets):
             hashtags = []
             for tag in tweet.entities['hashtags']:
                 hashtags.append(tag['text'])
-            tweetObject = Tweet(id=tweet.id, text=tweet.text, hashtags=hashtags, user=user)
+            popularity = tweet.favorite_count + tweet.retweet_count
+            tweetObject = Tweet(user_id=tweet.id, text=tweet.text, hashtags=hashtags, user=user, popularity=popularity)
             tweetObjects.append(tweetObject)
     return tweetObjects
+
 
 def convertDictTweetsToObjects(tweets, addUser=False):
     tweetObjects = []
     tweetsData = tweets['data']
     count = 0
+    user = User()
     for tweet in tweetsData:
         if isGermanTweet(tweet):
             if addUser:
-                #u = api.getUser(user_id=tweet['author_id'])
-                #user = convertDictUserToObject(u)
                 u = api.getUser1(user_id=tweet['author_id'])
                 user = convertUserToObject(u)
-            elif not addUser:
-                user = User()
             hashtags = []
             try:
                 for tag in tweet['entities']['hashtags']:
                     hashtags.append(tag['tag'])
             except:
                 hashtags.append("")
-            tweetObject = Tweet(id=tweet['id'], text=tweet['text'], hashtags=hashtags, user=user)
+            popularity = tweet['public_metrics']['like_count'] + tweet['public_metrics']['retweet_count']
+            tweetObject = Tweet(user_id=tweet['id'], text=tweet['text'], hashtags=hashtags, user=user, popularity=popularity)
             tweetObjects.append(tweetObject)
-        count+=1
+        count += 1
     return tweetObjects, count
 
 
@@ -55,13 +57,14 @@ def convertUserToObject(user):
                       user.verified)
     return userObject
 
+
 def convertDictUserToObject(user):
     userData = user['data']
     try:
-        userObject = User(id=userData['id'], name=userData['name'],
-                      protected=userData['protected'],
-                      followers=userData['public_metrics']['followers_count'],
-                      verified=userData['verified'])
+        userObject = User(user_id=userData['id'], name=userData['name'],
+                          protected=userData['protected'],
+                          followers=userData['public_metrics']['followers_count'],
+                          verified=userData['verified'])
     except:
-        userObject = User(id=userData['id'], name=userData['name'])
+        userObject = User(user_id=userData['id'], name=userData['name'])
     return userObject

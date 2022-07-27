@@ -1,9 +1,11 @@
-from helper.TwitterManager import TwitterManager
+from data.DataConverter import convertDictTweetsToObjects
+from data.TwitterManager import TwitterManager
+
 
 class User:
 
-    def __init__(self, id=0, name='', protected=False, followers=0, verified=False):
-        self.id = id
+    def __init__(self, user_id=0, name='', protected=False, followers=0, verified=False):
+        self.id = user_id
         self.name = name
         self.protected = protected
         self.followers = followers
@@ -16,8 +18,8 @@ class User:
         self.favorite_tweets = []
         self.api = TwitterManager()
 
-    def createKeyValuePairs(self) -> list:
-        vector = {'name':self.name, 'protected': self.protected, 'followers': self.followers,
+    def createKeyValuePairs(self):
+        vector = {'name': self.name, 'protected': self.protected, 'followers': self.followers,
                   'verified': self.verified}
         return vector
 
@@ -25,16 +27,15 @@ class User:
         self.favorite_tweets.append(tweet)
 
     def updateFollowingList(self):
-        self.following = api.getAllFollowing(self.id)['data']
+        self.following = self.api.getAllFollowing(self.id)['data']
 
     def updateFollowersTweets(self):
         all_tweets = {}
         for u in self.following:
-            tweets = api.getAllUsersTweets(int(u['id']))
+            tweets = self.api.getAllUsersTweets(int(u['id']))
             print(u['id'])
             all_tweets.update(tweets)
         self.followersTweets = convertDictTweetsToObjects(all_tweets)
-
 
     def __hash__(self):
         return hash(str(self.name))
@@ -44,5 +45,3 @@ class User:
 
     def __cmp__(self, other):
         return self.id == other.id
-
-

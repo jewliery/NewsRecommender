@@ -1,9 +1,12 @@
-from helper.DataHelper import *
-from helper.TwitterManager import TwitterManager
-from helper.DataConverter import *
-from models.UserObject import User
-from deepdiff import DeepDiff
+from data.DataConverter import *
 import numpy as np
+
+
+def createYdata(positive, neutral):
+    pos = np.ones(len(positive), dtype=int)
+    neu = np.zeros(len(neutral), dtype=int)
+    y_train = np.concatenate([pos, neu], axis=0).tolist()
+    return y_train
 
 
 class UserData:
@@ -18,7 +21,7 @@ class UserData:
         self.x_train = []
         self.y_train = []
 
-    def setTrainData(self, train=[], x_train=[], y_train=[]):
+    def setTrainData(self, train, x_train, y_train):
         self.train = train
         self.y_train = y_train
         self.x_train = x_train
@@ -28,7 +31,7 @@ class UserData:
 
     # Collects all negative rated data from user,
     def getNegativeDataFromUser(self, user_id, count):
-        count = int(count/4) + 3
+        count = int(count / 4)
         self.following = self.api.getAllFollowing(user_id=user_id, max_results=count)['data']
         all_tweets = np.array([])
         for u in self.following:
@@ -40,7 +43,7 @@ class UserData:
     # Collects all positively rated data from user
     def getPositiveDataFromUser(self, user_id):
         tweets = self.api.getLikedTweets(user_id)
-        tweetObjects, count = convertDictTweetsToObjects(tweets, addUser=True) # HERE IF TOO MANY REQUESTS
+        tweetObjects, count = convertDictTweetsToObjects(tweets, addUser=True)  # HERE IF TOO MANY REQUESTS#
         return tweetObjects, count
 
     # Collects all Data (Positive and Negative) from User
@@ -61,41 +64,12 @@ class UserData:
                 trend_list.append(trend['name'])
         return trend_list
 
-# Soll Menge liefern, welche der User noch nicht kennt
+    # Soll Menge liefern, welche der User noch nicht kennt
     def getData(self):
         all_tweets = np.array([])
         for u in self.following:
             tweets = self.api.getUserTimeline(int(u['id']))
-            #tweets = api.getAllUsersTweets(int(u['id']))
+            # tweets = api.getAllUsersTweets(int(u['id']))
             tweet_objects = convertTweetsToObjects(tweets)
             all_tweets = np.append(all_tweets, tweet_objects, axis=0)
         return all_tweets
-
-
-    #-----------------------------------Preprocessing-----------------------------------
-    # Checks if Tweets is two times, if yes remove from list
-    def differenceOfTweetLists(self, neg_tweets, pos_tweets):
-        for neg_tweet in neg_tweets:
-            for pos_tweet in pos_tweets:
-                print(neg_tweet.id)
-                if neg_tweet.id == pos_tweet.id:
-                    neg_tweets.remove(neg_tweet)
-                    print(neg_tweet)
-        return neg_tweets
-
-    def scaleData(X_train):
-        scaler = preprocessing.StandardScaler().fit(X_train)
-        X_scaled = scaler.transform(X_train)
-        return X_scaled
-
-    # Vorrübergehende Lösung
-    def createYdata(self, positive, neutral):
-        pos = np.ones(len(positive), dtype=int)
-        neu = np.zeros(len(neutral), dtype=int)
-        y_train = np.concatenate([pos, neu], axis=0).tolist()
-        return y_train
-
-
-
-
-

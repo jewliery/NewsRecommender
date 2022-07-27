@@ -1,21 +1,22 @@
-# TweetObject, this class will contain a Tweet
 import string
+from models.UserObject import User
 
 
 def createHashtagString(hashtags):
-    string = ''
+    s = ''
     for tag in hashtags:
-        string += tag + ' '
-    return string
+        s += tag + ' '
+    return s
+
 
 class Tweet:
 
-    def __init__(self, id=0, text='', hashtags=[], user=None):
-        self.id: int = id
+    def __init__(self, user_id=0, text='', hashtags=[], user=None, popularity=0):
+        self.id: int = user_id
         self.text: string = text
         self.hashtags = createHashtagString(hashtags)
         self.user: User = user
-        #self.keyValuePairs: list = self.createKeyValuePairs()
+        self.popularity = popularity
 
     def __hash__(self):
         return hash(self.text)
@@ -26,13 +27,12 @@ class Tweet:
     def __cmp__(self, other):
         return self.id == other.id
 
-    def  __gt__(self, other):
+    def __gt__(self, other):
         return self.id > other.id
 
-    def createKeyValuePairs(self) -> list:
-        vector = {'popular': self.popular, 'language': self.language}
+    def createKeyValuePairs(self):
+        vector = {'popular': self.popularity}
         return vector
-
 
     def print(self, showUser=True):
         print('')
@@ -40,14 +40,7 @@ class Tweet:
         print('Id: ' + str(self.id))
         print('Text: ' + self.text)
         print('Hashtags: ' + self.hashtags)
-        print('Popular: ' + str(self.popular))
-        print('Language: ' + self.language)
-        rating = 'Rating: '
-        if self.rating.favorited:
-            rating += 'favorited '
-        if self.rating.retweeted:
-            rating += 'retweeted '
-        print(rating)
+        print('Popular: ' + str(self.popularity))
 
         if showUser & (self.user is not None):
             print('')
@@ -57,5 +50,3 @@ class Tweet:
             print('Protected: ' + str(self.user.protected))
             print('Followers: ' + str(self.user.followers))
             print('Verified: ' + str(self.user.verified))
-
-

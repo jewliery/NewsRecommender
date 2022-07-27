@@ -1,71 +1,31 @@
-import json
-#from helper.MyStreamListener import MyStreamListener
-from models.UserObject import User
-from models.TweetObject import Tweet
-from helper.TwitterManager import TwitterManager
-from helper.FeatureSelection import *
-from helper.DataHelper import *
-from helper.Learner import *
 from helper.Visualizer import *
-from helper.DataPreprocessor import UserData
-from helper.Modeling import *
 from helper.Recommender import *
 
-#api = TwitterManager()
-
-#----------------------------Visualization------------------------------
-# tweetVectors, features = getAllMyLikedTextVectorData()
-# showBarGraph(tweetVectors, features)
-# showBar(tweetVectors, features)
-# show2DVisualization(tweetVectors)
-
-# tweets = api.getAllMyLikedTweets()
-# tweetObjects = convertDictTweetsToObjects(tweets)
-# showAnother2DVisualization(tweetObjects)
-
-#--------------------------------Testing--------------------------------
-# tweet_obj = getAllMyLikedRawData()
-# for t in tweet_obj:
-#     t.print()
-
-#-----------------------------------Test----------------------------------
-
-#testModels("jules3x")
-#clf = createUserModel("jules3x", "random-forest")
-
 userData = UserData(user_name="jules3x")
-# testModels(userData)
-# show2DVisualization(userData.x_train)
-createUserModel(userData, "decision-tree")
-clf, pred, x_test, y_test, results = createUserModel(userData, "bgs")
-boundedGreedySelection(pred, x_test, y_test, userData, 10, results)
-profilePartitioning(userData)
-rec = anomaliesExceptions(userData, 10)
+# ----------------------------Visualization------------------------------
+show2DVisualization(userData.train)
+showAnother2DVisualization(userData.train)
+
+
+# -------- Evaluation of the Methods  --------------------------
+
+# PLAIN
+# createUserModel(userData, "naive-bayes")
+# showResult("plain")
+
+# BOUNDED-GREEDY-SELECTION
+# boundedGreedySelection(userData, 10)
+# showResult("bgs")
+
+# USER PROFILE PARTITIONING
+# profile_partitioning(userData, 10)
+# showResult("upp")
+
+# ANOMALIES AND EXCEPTIONS
+# rec = anomaliesExceptions(userData, 10)
+# showResult("aua")
+
+# EVERYTHING AT ONCE
+testModels(userData)
 showEvaluation()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
