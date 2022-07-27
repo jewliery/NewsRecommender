@@ -2,30 +2,30 @@ from helper.Visualizer import *
 from helper.Recommender import *
 
 userData = UserData(user_name="jules3x")
-# ----------------------------Visualization------------------------------
+# ---------------------Visualization----------------------
 show2DVisualization(userData.train)
 showAnother2DVisualization(userData.train)
 
 
-# -------- Evaluation of the Methods  --------------------------
+# -----------------------Evaluation-------------------------
 
-# PLAIN
+# ----------PLAIN RECOMMENDER---------
 # createUserModel(userData, "naive-bayes")
 # showResult("plain")
 
-# BOUNDED-GREEDY-SELECTION
+# -------BOUNDED-GREEDY-SELECTION--------
 # boundedGreedySelection(userData, 10)
 # showResult("bgs")
 
-# USER PROFILE PARTITIONING
+# ------USER PROFILE PARTITIONING------
 # profile_partitioning(userData, 10)
 # showResult("upp")
 
-# ANOMALIES AND EXCEPTIONS
+# ------ANOMALIES AND EXCEPTIONS------
 # rec = anomaliesExceptions(userData, 10)
 # showResult("aua")
 
-# EVERYTHING AT ONCE
+# --------EVERYTHING AT ONCE--------
 testModels(userData)
 showEvaluation()
 
