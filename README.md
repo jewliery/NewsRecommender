@@ -14,5 +14,5 @@ It's about a News Recommender using the Twitter API and Python scikit learn.
 
 ### Extras
 * Man kann nicht zu viele Anfragen auf einmal machen, sonst überschreitet man die Rate Limits der Twitter-API
-  * Falls dass passiert reicht es maximal 15min zu warten, dann musste die Anfrage wieder durchgehen
+  * Falls dass passiert reicht es maximal 15min zu warten, dann müsste die Anfrage wieder durchgehen
 
