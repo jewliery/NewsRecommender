@@ -1,5 +1,5 @@
 # Twitter News Recommender
-This is the Bachelor Project from Julienne Büchele.
+Bachelor Project from Julienne Büchele.
 It's about a News Recommender using the Twitter API and Python scikit learn.
 
 ### Information über das Project
