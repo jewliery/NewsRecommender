@@ -220,3 +220,5 @@ def createFullVectorsTfIdf(tweets):
         features = np.concatenate([featuresText, featuresUser], axis=0).tolist()
         vector = np.concatenate([vectorTexts, vectorUser], axis=1).tolist()
     return vector, features
+
+

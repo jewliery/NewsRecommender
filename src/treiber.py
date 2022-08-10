@@ -2,12 +2,15 @@ from helper.Visualizer import *
 from helper.Recommender import *
 
 userData = UserData(user_name="jules3x")
+getTrainingData(userData)
 # ---------------------Visualization----------------------
-show2DVisualization(userData.train)
-showAnother2DVisualization(userData.train)
+show2DVisualization(userData.x_train)
 
 
 # -----------------------Evaluation-------------------------
+
+# -----TEST DIFFERENT CLASSIFIER------
+# testModels(userData)
 
 # ----------PLAIN RECOMMENDER---------
 # createUserModel(userData, "naive-bayes")
@@ -25,7 +28,7 @@ showAnother2DVisualization(userData.train)
 # rec = anomaliesExceptions(userData, 10)
 # showResult("aua")
 
-# --------EVERYTHING AT ONCE--------
-testModels(userData)
-showEvaluation()
+
+
+
 

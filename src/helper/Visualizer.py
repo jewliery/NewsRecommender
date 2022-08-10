@@ -25,23 +25,3 @@ def show2DVisualization(tweets):
     tsne.fit_transform(tweets)
     tsne.show()
 
-
-def showAnother2DVisualization(tweets):
-    corpus = []
-    for tweet in tweets:
-        t = tweet.text + "" + tweet.hashtags
-        corpus.append(t)
-
-    for c in corpus:
-        print(c)
-        print("------------------------------")
-    tfidf = TfidfVectorizer()
-
-    X = tfidf.fit_transform(corpus)
-
-    clusters = KMeans(n_clusters=5)
-    clusters.fit(X)
-
-    tsne = TSNEVisualizer()
-    tsne.fit(X, ["c{}".format(c) for c in clusters.labels_])
-    tsne.show()

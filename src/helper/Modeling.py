@@ -20,8 +20,8 @@ def showEvaluation():
     evaluation.showResults()
 
 
-def showResult():
-    evaluation.showResult()
+def showResult(method):
+    evaluation.showResult(method)
 
 
 def getTrainingData(userData):
@@ -106,12 +106,12 @@ def profile_partitioning(userData, k):
     x_nearest_tweets = []
     y_nearest_tweets = []
     y_other_tweets = []
+
     # Für jedes Cluster die Elemente welche dem Cluster am nächsten sind
     for i in range(0, n):
         x = x_cluster[i]
         distance = pairwise_distances(X=x, Y=x_test, metric='euclidean')
         avg_dist = getAvgDistances(distance)
-        avg_dist, x_test, y_test = iter(avg_dist), iter(x_test), iter(y_test)
         sorted_x_test = [i for _, i in sorted(zip(avg_dist, x_test))]
         sorted_y_test = [i for _, i in sorted(zip(avg_dist, y_test))]
         x_nearest_tweets += sorted_x_test[0:m]  # Die Tweets die empfohlen werden sollen

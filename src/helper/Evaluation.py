@@ -94,7 +94,7 @@ class Evaluation:
             user_count += t.popularity
 
         popularity = tweet.popularity
-        if user_count != 0:
+        if user_count > 0:
             iuf = np.log(popularity / user_count)
         else:
             iuf = 0

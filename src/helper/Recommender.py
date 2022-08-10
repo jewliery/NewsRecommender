@@ -97,7 +97,7 @@ def boundedGreedySelection(userData, k):
     return s
 
 
-def getDistance(x, y):
+def getDistance(x, y=[]):
     if len(y) != 0:
         distance = pairwise_distances(X=x, Y=y, metric='euclidean')
     else:

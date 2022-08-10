@@ -1,4 +1,3 @@
-from data.DataConverter import convertDictTweetsToObjects
 from data.TwitterManager import TwitterManager
 
 
@@ -29,13 +28,6 @@ class User:
     def updateFollowingList(self):
         self.following = self.api.getAllFollowing(self.id)['data']
 
-    def updateFollowersTweets(self):
-        all_tweets = {}
-        for u in self.following:
-            tweets = self.api.getAllUsersTweets(int(u['id']))
-            print(u['id'])
-            all_tweets.update(tweets)
-        self.followersTweets = convertDictTweetsToObjects(all_tweets)
 
     def __hash__(self):
         return hash(str(self.name))
