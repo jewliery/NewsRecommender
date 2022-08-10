@@ -10,7 +10,7 @@ It's about a News Recommender using the Twitter API and Python scikit learn.
 * Um die Methoden zu starten, muss die Datei "treiber.py" geöffnet werden
 * Unter "Visualization" können die verwendeten Twitter-Beiträge visualisiert werden, dazu einfach den Code einkommentieren
 * Unter "Evaluation" können die verschiedenen Methoden ausgewertet werden. Dafür muss jeweils der Code unter der beschrieben Methode einkommentiert werden
-* Unter "Everything at once" können alle Methoden auf einmal ausgewertet werden. Dies dauert jedoch etwas länger (normalerweise bis zu 1min)
+* Unter "Everything at once" können die verschiedenen Klassifizierungsalgorithmen getestet werden
 
 ### Extras
 * Man kann nicht zu viele Anfragen auf einmal machen, sonst überschreitet man die Rate Limits der Twitter-API
