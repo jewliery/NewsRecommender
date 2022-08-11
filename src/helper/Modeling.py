@@ -1,7 +1,7 @@
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from data.DataPreprocessor import *
-from data.FeatureSelection import *
+from data.FeatureExtraction import *
 from helper.Evaluation import Evaluation
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -56,7 +56,7 @@ def createUserModel(userData, algorithm):
 
     if algorithm != "bgs":
         rec_list, rec_tweets = getRecommendationList(pred, x_test, userData)
-        ild = evaluation.getILD(rec_list[0:8])
+        ild = evaluation.getILD(rec_list[0:10])
         unexp = evaluation.getUnexp(rec_list[0:10], userData.x_train[0:10])
         novelty = evaluation.getAvgNovelty(rec_tweets[0:10])
         results.append(ild)
@@ -121,8 +121,8 @@ def profile_partitioning(userData, k):
     y_sorted = np.concatenate([y_nearest_tweets, y_other_tweets], axis=0).tolist()
     y_pred = np.concatenate([np.ones(len(y_nearest_tweets), dtype=int), np.zeros(len(y_other_tweets), dtype=int)],
                             axis=0).tolist()
-    print("Recommended Tweets and if they are relevant or not")
-    print(y_nearest_tweets)
+    # print("Recommended Tweets and if they are relevant or not")
+    # print(y_nearest_tweets)
 
     tweets = getTweets(x_nearest_tweets[0:10], userData)
     results = evaluate(y_sorted, y_pred)
@@ -159,6 +159,7 @@ def determineN(x_train):
             current_n = i + 1
         else:
             current_n = 2
+    # Show Elbow Criteria
     # plt.plot(range(1,6), distortions, marker='o')
     # plt.xlabel('Anzahl der Cluster')
     # plt.ylabel('Verzerrung')
@@ -306,9 +307,6 @@ def decisionTree(x, y):
 def bench(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
-    print("Data:")
-    print(y_train)
-    print(y_test)
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)
@@ -342,16 +340,11 @@ def bench(clf, x, y):
 def bench_proba(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
-    print("Data:")
-    print(y_train)
-    print(y_test)
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)
 
     pred_proba = clf.predict_proba(X_test)
-    print("Prediction: " % pred_proba)
-    print(pred_proba)
 
     pred = clf.predict(X_test)
     print("Prediction: " % pred)
@@ -378,9 +371,6 @@ def bench_proba(clf, x, y):
 def benchmark(clf, x, y):
     X_train, X_test, y_train, y_test = train_test_split(x, y)
     print("_" * 80)
-    print("Data:")
-    print(y_train)
-    print(y_test)
     print("Training: ")
     print(clf)
     clf.fit(X_train, y_train)

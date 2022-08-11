@@ -9,8 +9,6 @@ def getRecList(pred, x_test, y_test):
     recommendVectors = []
     recommended_y_values = []
     not_recommended_y_values = []
-    print("Original Prediction List")
-    print(pred)
     # if 1, tweet is recommended
     for i in range(0, len(pred)):
         if pred[i] == 1:
@@ -36,8 +34,6 @@ def boundedGreedySelection(userData, k):
     vec, y_all_values, y_not_rec = getRecList(pred, x_test, y_test)
     y_values = []
     y_other = y_all_values
-    print("Recommendation y Values")
-    print(y_other)
     r = vec
     dist = getDistance(r)
     s = []
@@ -78,12 +74,10 @@ def boundedGreedySelection(userData, k):
         y_other.remove(y_all_values[index])
         r.remove(r[index])
 
-    print(y_values)
     y = np.concatenate([y_values, y_other, y_not_rec], axis=0).tolist()
     pred = np.concatenate([np.ones(len(y_values), dtype=int), np.zeros(len(y_other) + len(y_not_rec), dtype=int)],
                           axis=0).tolist()
-    print(y)
-    print(pred)
+
     results = evaluate(y, pred)
 
     tweets = getTweets(s, userData)

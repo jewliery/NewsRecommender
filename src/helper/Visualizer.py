@@ -1,8 +1,6 @@
 from yellowbrick.text import FreqDistVisualizer
 from yellowbrick.text import TSNEVisualizer
-from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
-from sklearn.cluster import KMeans
 
 
 def showBarGraph(tweets, features):

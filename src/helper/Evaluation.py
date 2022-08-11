@@ -22,7 +22,9 @@ class Evaluation:
 
     def showResults(self):
         results = [self.plain, self.profile_partitioning, self.bgs, self.anomalies_exceptions]
-        print(results)
+
+        for i in results:
+            self.printResults(i, i[0])
 
         indices = np.arange(len(results))
         results = [[x[i] for x in results] for i in range(7)]
@@ -30,8 +32,7 @@ class Evaluation:
         clf_names, score, precision, recall, ild, unexp, novelty = results
 
         plt.figure(figsize=(12, 8))
-        plt.title("Score")
-        # plt.barh(indices, score, 0.15, label="Score", color="navy")
+        plt.title("Evaluierung")
         plt.barh(indices, precision, 0.15, label="Precision", color="c")
         plt.barh(indices + 0.2, recall, 0.15, label="Recall", color="darkorange")
         plt.barh(indices + 0.4, ild, 0.15, label="ILD", color="red")
@@ -44,14 +45,13 @@ class Evaluation:
         plt.subplots_adjust(bottom=0.05)
 
         for i, c in zip(indices, clf_names):
-            plt.text(-0.3, i, c)  # vorher -0.3!
+            plt.text(-1.0, i, c)
 
         plt.show()
 
     @staticmethod
     def getILD(x):
         distance = pairwise_distances(X=x, metric='euclidean')
-        # print(distance)
         all_avg = 0
         for i in range(0, len(distance) - 1):
             one_avg = 0
@@ -95,7 +95,8 @@ class Evaluation:
 
         popularity = tweet.popularity
         if user_count > 0:
-            iuf = np.log(popularity / user_count)
+            x = popularity / user_count
+            iuf = np.log(x)
         else:
             iuf = 0
         return iuf
@@ -112,8 +113,7 @@ class Evaluation:
         else:
             results = self.plain
 
-        print("Evaluierung:")
-        print(results)
+        self.printResults(results, method)
 
         clf_names, score, precision, recall, ild, unexp, novelty = results
 
@@ -132,3 +132,16 @@ class Evaluation:
         plt.subplots_adjust(bottom=0.05)
 
         plt.show()
+
+    @staticmethod
+    def printResults(results, method):
+        print("------Results from " + method + ":------")
+        print("Score:   %0.3f" % results[1])
+        print("Precision:   %0.3f" % results[2])
+        print("Recall:   %0.3f" % results[3])
+        print("ILD:   %0.3f" % results[4])
+        print("Unexp:   %0.3f" % results[5])
+        print("Novelty:   %0.3f" % results[6])
+
+
+

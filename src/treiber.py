@@ -1,11 +1,12 @@
 from helper.Visualizer import *
 from helper.Recommender import *
 
+# ---------------------GET DATA----------------------------
 userData = UserData(user_name="jules3x")
 getTrainingData(userData)
-# ---------------------Visualization----------------------
-show2DVisualization(userData.x_train)
 
+# ---------------------Visualization----------------------
+# show2DVisualization(userData.x_train)
 
 # -----------------------Evaluation-------------------------
 
@@ -25,10 +26,12 @@ show2DVisualization(userData.x_train)
 # showResult("upp")
 
 # ------ANOMALIES AND EXCEPTIONS------
-# rec = anomaliesExceptions(userData, 10)
+# anomaliesExceptions(userData, 10)
 # showResult("aua")
 
-
-
-
-
+# ---------TEST EVERY METHOD-----------
+createUserModel(userData, "naive-bayes")
+boundedGreedySelection(userData, 10)
+profile_partitioning(userData, 10)
+anomaliesExceptions(userData, 10)
+showEvaluation()
