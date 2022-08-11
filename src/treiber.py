@@ -18,8 +18,8 @@ getTrainingData(userData)
 # showResult("plain")
 
 # -------BOUNDED-GREEDY-SELECTION--------
-# boundedGreedySelection(userData, 10)
-# showResult("bgs")
+boundedGreedySelection(userData, 10)
+showResult("bgs")
 
 # ------USER PROFILE PARTITIONING------
 # profile_partitioning(userData, 10)
@@ -30,8 +30,8 @@ getTrainingData(userData)
 # showResult("aua")
 
 # ---------TEST EVERY METHOD-----------
-createUserModel(userData, "naive-bayes")
-boundedGreedySelection(userData, 10)
-profile_partitioning(userData, 10)
-anomaliesExceptions(userData, 10)
-showEvaluation()
+# createUserModel(userData, "naive-bayes")
+# boundedGreedySelection(userData, 10)
+# profile_partitioning(userData, 10)
+# anomaliesExceptions(userData, 10)
+# showEvaluation()
