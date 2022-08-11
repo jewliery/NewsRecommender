@@ -18,12 +18,12 @@ getTrainingData(userData)
 # showResult("plain")
 
 # -------BOUNDED-GREEDY-SELECTION--------
-boundedGreedySelection(userData, 10)
-showResult("bgs")
+# boundedGreedySelection(userData, 10)
+# showResult("bgs")
 
 # ------USER PROFILE PARTITIONING------
-# profile_partitioning(userData, 10)
-# showResult("upp")
+profile_partitioning(userData, 10)
+showResult("upp")
 
 # ------ANOMALIES AND EXCEPTIONS------
 # anomaliesExceptions(userData, 10)
